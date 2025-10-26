@@ -3,15 +3,20 @@
         <!-- Left Card: Profile Summary -->
         <div class="card profile-summary-card">
             <div class="profile-avatar-wrapper">
-                <div class="profile-avatar">
-                    <i data-lucide="user"></i>
+                <div class="profile-avatar" id="profile-avatar">
+                    {% if user and user['profile_image'] %}
+                        <img src="{{ user['profile_image'] }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    {% else %}
+                        <i data-lucide="user"></i>
+                    {% endif %}
                 </div>
             </div>
-            <button class="change-image-btn">Change Image</button>
-            <h3 class="profile-name">mohamed ramy</h3>
+            <input type="file" id="profile-image-input" accept="image/*" style="display: none;">
+            <button class="change-image-btn" id="change-image-btn">Change Image</button>
+            <h3 class="profile-name">{{ user['first_name'] }} {{ user['last_name'] if user else session.get('user_name', 'User') }}</h3>
             <button class="profile-upgrade-btn">Upgrade</button>
-            <p class="profile-meta">3th Year • Class of 2023</p>
-            <span class="profile-tag">Alexandria University</span>
+            <p class="profile-meta">Student • Member since {{ user['created_at'][:10] if user else 'N/A' }}</p>
+            <span class="profile-tag">{{ user['university'] if user and user['university'] else 'University' }}</span>
         </div>
 
         <!-- Right Card: Profile Form -->
@@ -20,44 +25,48 @@
                 <i data-lucide="user-cog"></i>
                 <h3 class="profile-form-title">Profile Information</h3>
             </div>
-            <form>
+            
+            <form id="profile-form" method="POST">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="first-name" class="form-label">First Name</label>
                         <div class="form-input-wrapper">
                             <i data-lucide="user"></i>
-                            <input type="text" id="first-name" class="form-input" value="mohamed">
+                            <input type="text" id="first-name" name="first_name" class="form-input" value="{{ user['first_name'] if user else '' }}" required>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="last-name" class="form-label">Last Name</label>
                         <div class="form-input-wrapper">
                                 <i data-lucide="user"></i>
-                            <input type="text" id="last-name" class="form-input" value="ramy">
+                            <input type="text" id="last-name" name="last_name" class="form-input" value="{{ user['last_name'] if user else '' }}" required>
                         </div>
                     </div>
                     <div class="form-group full-width">
                         <label for="email" class="form-label">Email</label>
                         <div class="form-input-wrapper">
                             <i data-lucide="mail"></i>
-                            <input type="email" id="email" class="form-input" value="m.r.business390@gmail.com">
+                            <input type="email" id="email" class="form-input" value="{{ user['email'] if user else '' }}" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
                         </div>
                     </div>
                     <div class="form-group full-width">
                             <label for="phone" class="form-label">Phone</label>
-                            <div class="phone-input-group">
-                                <select class="form-select country-code-select">
-                                    <option>🇪🇬 +20</option>
-                                </select>
-                                <input type="tel" id="phone" class="form-input phone-input" value="10423745">
+                            <div class="form-input-wrapper">
+                                <i data-lucide="phone"></i>
+                                <input type="tel" id="phone" name="phone" class="form-input" value="{{ user['phone'] if user and user['phone'] else '' }}" placeholder="Enter your phone number">
                             </div>
                     </div>
                         <div class="form-group">
                         <label for="grade" class="form-label">Grade</label>
                         <div class="form-input-wrapper">
                             <i data-lucide="graduation-cap"></i>
-                            <select id="grade" class="form-select">
-                                <option>Third Year</option>
+                            <select id="grade" name="grade" class="form-select">
+                                <option value="First Year" {% if user and user['grade'] == 'First Year' %}selected{% endif %}>First Year</option>
+                                <option value="Second Year" {% if user and user['grade'] == 'Second Year' %}selected{% endif %}>Second Year</option>
+                                <option value="Third Year" {% if user and user['grade'] == 'Third Year' %}selected{% endif %}>Third Year</option>
+                                <option value="Fourth Year" {% if user and user['grade'] == 'Fourth Year' %}selected{% endif %}>Fourth Year</option>
+                                <option value="Fifth Year" {% if user and user['grade'] == 'Fifth Year' %}selected{% endif %}>Fifth Year</option>
+                                <option value="Graduate" {% if user and user['grade'] == 'Graduate' %}selected{% endif %}>Graduate</option>
                             </select>
                         </div>
                     </div>
@@ -65,31 +74,25 @@
                         <label for="grad-year" class="form-label">Graduation Year</label>
                         <div class="form-input-wrapper">
                             <i data-lucide="calendar"></i>
-                            <select id="grad-year" class="form-select">
-                                <option>2018 - 2023</option>
-                            </select>
+                            <input type="text" id="grad-year" name="graduation_year" class="form-input" value="{{ user['graduation_year'] if user and user['graduation_year'] else '' }}" placeholder="e.g., 2023-2028">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="nationality" class="form-label">Nationality</label>
                         <div class="form-input-wrapper">
                             <i data-lucide="flag"></i>
-                            <select id="nationality" class="form-select">
-                                <option>🇪🇬 Egypt</option>
-                            </select>
+                            <input type="text" id="nationality" name="nationality" class="form-input" value="{{ user['nationality'] if user and user['nationality'] else '' }}" placeholder="Enter your nationality">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="university" class="form-label">University</label>
                         <div class="form-input-wrapper">
                             <i data-lucide="school"></i>
-                            <select id="university" class="form-select">
-                                <option>Alexandria University</option>
-                            </select>
+                            <input type="text" id="university" name="university" class="form-input" value="{{ user['university'] if user and user['university'] else '' }}" placeholder="Enter your university">
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="save-btn" disabled>Save</button>
+                <button type="submit" id="save-btn" class="save-btn" disabled style="opacity: 0.5; cursor: not-allowed; transition: all 0.3s ease; color: white;">Save</button>
                 <button type="button" class="password-btn">
                     <i data-lucide="key-round"></i>
                     Change Password
@@ -98,3 +101,44 @@
         </div>
         </div>
 </main>
+
+<style>
+    .save-btn {
+        color: white !important;
+    }
+    
+    .save-btn.active {
+        background-color: #2C3E50 !important;
+        opacity: 1 !important;
+        cursor: pointer !important;
+        animation: pulseGlow 0.5s ease-in-out;
+    }
+    
+    .save-btn.saving {
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulseGlow {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(44, 62, 80, 0.7);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px 5px rgba(44, 62, 80, 0.3);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(44, 62, 80, 0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
+</style>

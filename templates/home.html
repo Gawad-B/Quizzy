@@ -2,7 +2,7 @@
     <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div>
-            <h3 class="welcome-title">Welcome Back, Mohamed Ramy!</h3>
+            <h3 class="welcome-title">Welcome Back, {{ session.get('user_name', 'User') }}!</h3>
             <p class="welcome-subtitle">Let's continue to improve your knowledge. Start a new quiz now!</p>
             <button class="welcome-button">
                 <i data-lucide="plus-circle" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;"></i>
