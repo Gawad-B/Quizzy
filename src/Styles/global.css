@@ -1,0 +1,80 @@
+:root {
+    /* Primary brand */
+    --color-primary: #4f46e5;   /* Indigo */
+    --color-primary-light: #6366f1;
+    --color-primary-dark: #3730a3;
+  
+    /* Backgrounds */
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f9fafb;
+    --color-bg-accent: #f3f4f6;
+  
+    /* Text */
+    --color-text: #111827;
+    --color-text-secondary: #4b5563;
+    --color-text-muted: #9ca3af;
+  
+    /* Cards / Surfaces */
+    --color-card-bg: #ffffff;
+    --color-border: #e5e7eb;
+  
+    /* Status Colors */
+    --color-success: #10b981;   /* green */
+    --color-danger: #ef4444;    /* red */
+    --color-warning: #f59e0b;   /* amber */
+    --color-info: #3b82f6;      /* blue */
+  
+    /* Chart Colors */
+    --color-chart-1: #4f46e5;
+    --color-chart-2: #9ca3af;
+    --color-chart-3: #3b82f6;
+  }
+  
+  /* 🌙 Dark Mode */
+  [data-theme="dark"] {
+    --color-bg: #111827;
+    --color-bg-secondary: #1f2937;
+    --color-bg-accent: #374151;
+  
+    --color-text: #f9fafb;
+    --color-text-secondary: #d1d5db;
+    --color-text-muted: #9ca3af;
+  
+    --color-card-bg: #1f2937;
+    --color-border: #374151;
+  
+    /* Status colors remain, can be tuned */
+    --color-success: #34d399;
+    --color-danger: #f87171;
+    --color-warning: #fbbf24;
+    --color-info: #60a5fa;
+  
+    /* Chart Colors */
+    --color-chart-1: #818cf8;
+    --color-chart-2: #6b7280;
+    --color-chart-3: #60a5fa;
+  }
+  
+  /* Loading Spinner Animation */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Example usage */
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  
+  .card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  h1, h2, h3, h4, h5 {
+    color: var(--color-text);
+  }
+  
