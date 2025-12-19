@@ -5,8 +5,6 @@ import Signup from '../pages/auth/Signup'
 import History from '../pages/dashboard/History'
 import Overview from '../pages/dashboard/Overview'
 import Analysis from '../pages/dashboard/Analysis'
-import Rooms from '../pages/dashboard/Rooms'
-import Notes from '../pages/dashboard/Notes'
 import CreateQuiz from '../pages/dashboard/CreateQuiz'
 import Quiz from '../pages/quiz/Quiz'
 import DashboardLayout from '../components/layout/DashboardLayout'
@@ -45,20 +43,6 @@ const AppRoutes = () => {
         <ProtectedRoute>
           <DashboardLayout>
             <History />
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-      <Route path='/rooms' element={
-        <ProtectedRoute>
-          <DashboardLayout>
-            <Rooms />
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-      <Route path='/notes' element={
-        <ProtectedRoute>
-          <DashboardLayout>
-            <Notes />
           </DashboardLayout>
         </ProtectedRoute>
       } />

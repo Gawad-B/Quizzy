@@ -102,37 +102,52 @@ const Login = () => {
 
   return (
     <div style={{
+      width: '100vw',
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'var(--color-bg-secondary)',
-      padding: '1rem'
+      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+      padding: '1rem',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      overflow: 'auto'
     }}>
       <div style={{
-        background: 'var(--color-card-bg)',
-        border: '1px solid var(--color-border)',
-        borderRadius: '16px',
-        padding: '2rem',
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px',
+        padding: '3rem 2.5rem',
         width: '100%',
-        maxWidth: '400px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+        maxWidth: '440px',
+        margin: '0 auto',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 100px rgba(102, 126, 234, 0.1)',
+        position: 'relative',
+        zIndex: 1
       }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 style={{
-            color: 'var(--color-text)',
-            fontSize: '2rem',
-            fontWeight: '700',
-            marginBottom: '0.5rem'
+            background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            marginBottom: '0.75rem',
+            letterSpacing: '-0.02em'
           }}>
-            Welcome Back
+            Login
           </h1>
           <p style={{
-            color: 'var(--color-text-secondary)',
-            fontSize: '1rem'
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '0.95rem',
+            margin: 0
           }}>
-            Sign in to your Quizzy account
+            Sign in to continue your journey
           </p>
         </div>
 
@@ -156,12 +171,12 @@ const Login = () => {
           <div style={{ marginBottom: '1.5rem' }}>
             <label htmlFor="email" style={{
               display: 'block',
-              color: 'var(--color-text)',
-              fontSize: '0.875rem',
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '0.9rem',
               fontWeight: '500',
-              marginBottom: '0.5rem'
+              marginBottom: '0.6rem'
             }}>
-              Email Address
+              Email
             </label>
             <input
               type="email"
@@ -171,16 +186,19 @@ const Login = () => {
               onChange={handleChange}
               style={{
                 width: '100%',
-                padding: '0.75rem',
-                border: `1px solid ${errors.email ? 'var(--color-danger)' : 'var(--color-border)'}`,
-                borderRadius: '8px',
+                padding: '0.875rem 1rem',
+                border: `2px solid ${errors.email ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+                borderRadius: '12px',
                 fontSize: '1rem',
-                background: 'var(--color-bg)',
-                color: 'var(--color-text)',
-                transition: 'border-color 0.2s ease'
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: 'white',
+                transition: 'all 0.3s ease',
+                outline: 'none'
               }}
               placeholder="Enter your email"
               disabled={isLoggingIn}
+              onFocus={(e) => e.target.style.borderColor = 'rgba(0, 212, 255, 0.5)'}
+              onBlur={(e) => e.target.style.borderColor = errors.email ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}
             />
             {errors.email && (
               <p style={{
@@ -196,15 +214,23 @@ const Login = () => {
 
           {/* Password Field */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="password" style={{
-              display: 'block',
-              color: 'var(--color-text)',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              marginBottom: '0.5rem'
-            }}>
-              Password
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+              <label htmlFor="password" style={{
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontSize: '0.9rem',
+                fontWeight: '500'
+              }}>
+                Password
+              </label>
+              <a href="#" style={{
+                color: 'rgba(0, 212, 255, 0.8)',
+                fontSize: '0.85rem',
+                textDecoration: 'none',
+                fontWeight: '500'
+              }}>
+                Forget Password
+              </a>
+            </div>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -214,17 +240,20 @@ const Login = () => {
                 onChange={handleChange}
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
+                  padding: '0.875rem 1rem',
                   paddingRight: '3rem',
-                  border: `1px solid ${errors.password ? 'var(--color-danger)' : 'var(--color-border)'}`,
-                  borderRadius: '8px',
+                  border: `2px solid ${errors.password ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+                  borderRadius: '12px',
                   fontSize: '1rem',
-                  background: 'var(--color-bg)',
-                  color: 'var(--color-text)',
-                  transition: 'border-color 0.2s ease'
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: 'white',
+                  transition: 'all 0.3s ease',
+                  outline: 'none'
                 }}
                 placeholder="Enter your password"
                 disabled={isLoggingIn}
+                onFocus={(e) => e.target.style.borderColor = 'rgba(0, 212, 255, 0.5)'}
+                onBlur={(e) => e.target.style.borderColor = errors.password ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}
               />
               <button
                 type="button"
@@ -258,42 +287,72 @@ const Login = () => {
             )}
           </div>
 
+          {/* Remember Me & Forgot Password */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <input
+              type="checkbox"
+              id="remember"
+              style={{
+                width: '18px',
+                height: '18px',
+                marginRight: '0.5rem',
+                cursor: 'pointer',
+                accentColor: '#00d4ff'
+              }}
+            />
+            <label htmlFor="remember" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '0.875rem',
+              cursor: 'pointer'
+            }}>
+              Remember Me
+            </label>
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoggingIn}
             style={{
               width: '100%',
-              padding: '0.75rem',
-              background: isLoggingIn ? 'var(--color-text-muted)' : 'var(--color-primary)',
+              padding: '1rem',
+              background: isLoggingIn ? 'rgba(100, 100, 100, 0.5)' : 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: '600',
+              borderRadius: '12px',
+              fontSize: '1.05rem',
+              fontWeight: '700',
               cursor: isLoggingIn ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s ease',
-              marginBottom: '1.5rem'
+              transition: 'all 0.3s ease',
+              marginBottom: '1.5rem',
+              boxShadow: isLoggingIn ? 'none' : '0 8px 20px rgba(0, 212, 255, 0.3)',
+              textTransform: 'none',
+              letterSpacing: '0.02em'
             }}
+            onMouseEnter={(e) => !isLoggingIn && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 212, 255, 0.4)')}
+            onMouseLeave={(e) => !isLoggingIn && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 212, 255, 0.3)')}
           >
-            {isLoggingIn ? 'Signing In...' : 'Sign In'}
+            {isLoggingIn ? 'Logging In...' : 'Log In'}
           </button>
         </form>
 
         {/* Footer */}
         <div style={{ textAlign: 'center' }}>
           <p style={{
-            color: 'var(--color-text-secondary)',
-            fontSize: '0.875rem',
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '0.9rem',
             marginBottom: '0'
           }}>
-            Don't have an account?{' '}
+            Don't have a account{' '}
             <Link to="/signup" style={{
-              color: 'var(--color-primary)',
+              background: 'linear-gradient(135deg, #00d4ff 0%, #ec4899 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               textDecoration: 'none',
-              fontWeight: '500'
+              fontWeight: '700'
             }}>
-              Sign up
+              Register
             </Link>
           </p>
         </div>

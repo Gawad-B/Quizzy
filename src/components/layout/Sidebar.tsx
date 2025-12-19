@@ -20,8 +20,6 @@ import {
   History as HistoryIcon,
   Dashboard as OverviewIcon,
   Analytics as AnalyticsIcon,
-  MeetingRoom as RoomsIcon,
-  Notes as NotesIcon,
   Quiz as CreateQuizIcon,
   Menu as MenuIcon,
   School as SchoolIcon,
@@ -52,9 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
     { text: 'Overview', icon: <OverviewIcon />, path: '/overview' },
     { text: 'Analysis', icon: <AnalyticsIcon />, path: '/analysis' },
     { text: 'Create Quiz', icon: <CreateQuizIcon />, path: '/create-quiz' },
-    { text: 'Rooms', icon: <RoomsIcon />, path: '/rooms' },
     { text: 'History', icon: <HistoryIcon />, path: '/history' },
-    { text: 'Notes', icon: <NotesIcon />, path: '/notes' },
   ];
 
   const handleNavigation = (path: string) => {
@@ -86,26 +82,27 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
           alignItems: 'center',
           gap: 2,
           borderBottom: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.default
+          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(10px)'
         }}
       >
         <SchoolIcon 
           sx={{ 
             fontSize: 32, 
             color: theme.palette.primary.main,
-            filter: 'drop-shadow(0 2px 4px rgba(79, 70, 229, 0.2))'
+            filter: 'drop-shadow(0 2px 8px rgba(0, 212, 255, 0.4))'
           }} 
         />
         <Typography
           variant="h4"
           component="h1"
           sx={{
-            fontWeight: 700,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.02em'
           }}
         >
           Quizzy
@@ -121,18 +118,22 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
               sx={{
                 mx: 1,
                 borderRadius: 2,
-                backgroundColor: isActiveRoute(item.path) 
-                  ? theme.palette.primary.main
+                background: isActiveRoute(item.path) 
+                  ? 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)'
                   : 'transparent',
                 color: isActiveRoute(item.path) 
                   ? 'white' 
                   : theme.palette.text.primary,
+                boxShadow: isActiveRoute(item.path)
+                  ? '0 4px 12px rgba(0, 212, 255, 0.3)'
+                  : 'none',
                 '&:hover': {
-                  backgroundColor: isActiveRoute(item.path)
-                    ? theme.palette.primary.dark
-                    : theme.palette.action.hover,
+                  background: isActiveRoute(item.path)
+                    ? 'linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%)'
+                    : 'rgba(0, 212, 255, 0.1)',
                   transform: 'translateX(4px)',
-                  transition: 'all 0.2s ease-in-out'
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 4px 12px rgba(0, 212, 255, 0.2)'
                 },
                 transition: 'all 0.2s ease-in-out'
               }}
@@ -265,9 +266,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
           position="fixed"
           sx={{
             width: '100%',
-            backgroundColor: theme.palette.background.default,
+            backgroundColor: isDarkMode ? 'rgba(10, 14, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
             color: theme.palette.text.primary,
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+            boxShadow: isDarkMode ? '0 2px 10px rgba(0, 0, 0, 0.3)' : '0 2px 10px rgba(0, 0, 0, 0.08)',
+            borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
             zIndex: theme.zIndex.drawer + 1
           }}
         >
@@ -316,8 +319,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
-              backgroundColor: theme.palette.background.default,
-              borderRight: `1px solid ${theme.palette.divider}`
+              backgroundColor: isDarkMode ? 'rgba(10, 14, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)'
             },
           }}
         >
@@ -338,9 +342,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          backgroundColor: theme.palette.background.default,
-          borderRight: `1px solid ${theme.palette.divider}`,
-          boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)'
+          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: isDarkMode ? '2px 0 20px rgba(0, 0, 0, 0.3)' : '2px 0 20px rgba(0, 0, 0, 0.08)'
         },
       }}
       open

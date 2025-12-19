@@ -200,24 +200,6 @@ const Home = () => {
             >
               Create New Quiz
             </Button>
-            <Button
-              variant="outlined"
-              startIcon={<GroupIcon />}
-              sx={{
-                justifyContent: 'flex-start',
-                py: 1.5,
-                px: 3,
-                borderRadius: 2,
-                borderColor: theme.palette.primary.main,
-                color: theme.palette.primary.main,
-                '&:hover': {
-                  borderColor: theme.palette.primary.dark,
-                  backgroundColor: theme.palette.action.hover
-                }
-              }}
-            >
-              Join Quiz Room
-            </Button>
           </Box>
         </Paper>
 

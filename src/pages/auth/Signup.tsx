@@ -140,22 +140,23 @@ const Signup = () => {
 
   const inputStyle = (error?: string) => ({
     width: '100%',
-    padding: '0.75rem',
-    border: `1px solid ${error ? 'var(--color-danger)' : 'var(--color-border)'} `,
-    borderRadius: '8px',
+    padding: '0.875rem 1rem',
+    border: `2px solid ${error ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+    borderRadius: '12px',
     fontSize: '1rem',
-    background: 'var(--color-bg)',
-    color: 'var(--color-text)',
-    transition: 'border-color 0.2s ease',
-    marginBottom: '0.5rem'
+    background: 'rgba(255, 255, 255, 0.05)',
+    color: 'white',
+    transition: 'all 0.3s ease',
+    marginBottom: '0.5rem',
+    outline: 'none'
   });
 
   const labelStyle = {
     display: 'block',
-    color: 'var(--color-text)',
-    fontSize: '0.875rem',
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: '0.9rem',
     fontWeight: '500',
-    marginBottom: '0.5rem'
+    marginBottom: '0.6rem'
   };
 
   const errorStyle = {
@@ -167,27 +168,47 @@ const Signup = () => {
 
   return (
     <div style={{
+      width: '100%',
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'var(--color-bg-secondary)',
-      padding: '2rem 1rem'
+      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+      padding: '3rem 1rem',
+      backgroundAttachment: 'fixed'
     }}>
       <div style={{
-        background: 'var(--color-card-bg)',
-        border: '1px solid var(--color-border)',
-        borderRadius: '16px',
-        padding: '2rem',
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px',
+        padding: '3rem 2.5rem',
         width: '100%',
-        maxWidth: '600px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+        maxWidth: '650px',
+        margin: '2rem auto',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 100px rgba(102, 126, 234, 0.1)',
+        position: 'relative',
+        zIndex: 1
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ color: 'var(--color-text)', fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <h1 style={{
+            background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            marginBottom: '0.75rem',
+            letterSpacing: '-0.02em'
+          }}>
             Create Account
           </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem' }}>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '0.95rem',
+            margin: 0
+          }}>
             Join Quizzy and start your learning journey
           </p>
         </div>
@@ -275,27 +296,43 @@ const Signup = () => {
             disabled={isSigningUp}
             style={{
               width: '100%',
-              padding: '0.75rem',
-              background: isSigningUp ? 'var(--color-text-muted)' : 'var(--color-primary)',
+              padding: '1rem',
+              background: isSigningUp ? 'rgba(100, 100, 100, 0.5)' : 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: '600',
+              borderRadius: '12px',
+              fontSize: '1.05rem',
+              fontWeight: '700',
               cursor: isSigningUp ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s ease',
+              transition: 'all 0.3s ease',
               marginTop: '1rem',
-              marginBottom: '1.5rem'
+              marginBottom: '1.5rem',
+              boxShadow: isSigningUp ? 'none' : '0 8px 20px rgba(0, 212, 255, 0.3)',
+              textTransform: 'none',
+              letterSpacing: '0.02em'
             }}
+            onMouseEnter={(e) => !isSigningUp && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 212, 255, 0.4)')}
+            onMouseLeave={(e) => !isSigningUp && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 212, 255, 0.3)')}
           >
             {isSigningUp ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
         <div style={{ textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', marginBottom: '0' }}>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '0.9rem',
+            marginBottom: '0'
+          }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: '500' }}>
+            <Link to="/login" style={{
+              background: 'linear-gradient(135deg, #00d4ff 0%, #ec4899 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textDecoration: 'none',
+              fontWeight: '700'
+            }}>
               Sign in
             </Link>
           </p>

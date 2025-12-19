@@ -1,107 +1,252 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React,{ createContext, useContext, useState, useEffect} from 'react';
+import type { ReactNode } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
-// Light theme
+// Light theme with clean modern design
 const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#4f46e5', // var(--color-primary)
-      light: '#6366f1', // var(--color-primary-light)
-      dark: '#3730a3', // var(--color-primary-dark)
+      main: '#00d4ff', // Cyan
+      light: '#33ddff',
+      dark: '#00a8cc',
     },
     secondary: {
-      main: '#9ca3af', // var(--color-text-muted)
+      main: '#7c3aed', // Purple
+      light: '#9d5eff',
+      dark: '#5b21b6',
     },
     success: {
-      main: '#10b981', // var(--color-success)
+      main: '#10b981',
       light: '#34d399',
     },
     warning: {
-      main: '#f59e0b', // var(--color-warning)
+      main: '#f59e0b',
       light: '#fbbf24',
     },
     info: {
-      main: '#3b82f6', // var(--color-info)
+      main: '#00d4ff',
       light: '#60a5fa',
     },
     error: {
-      main: '#ef4444', // var(--color-danger)
+      main: '#ef4444',
+      light: '#f87171',
     },
     background: {
-      default: '#ffffff', // var(--color-bg)
-      paper: '#ffffff', // var(--color-card-bg)
+      default: '#f8fafc',
+      paper: '#ffffff',
     },
     text: {
-      primary: '#111827', // var(--color-text)
-      secondary: '#4b5563', // var(--color-text-secondary)
-      disabled: '#9ca3af', // var(--color-text-muted)
+      primary: '#0f172a',
+      secondary: '#475569',
+      disabled: '#94a3b8',
     },
-    divider: '#e5e7eb', // var(--color-border)
+    divider: '#e2e8f0',
     action: {
-      hover: '#f3f4f6', // var(--color-bg-accent)
+      hover: '#f1f5f9',
+      selected: 'rgba(0, 212, 255, 0.08)',
     },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          backgroundColor: '#ffffff',
-          color: '#111827',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #fce7f3 100%)',
+          backgroundAttachment: 'fixed',
+          color: '#0f172a',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        contained: {
+          background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
+          boxShadow: '0 4px 12px rgba(0, 212, 255, 0.3)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%)',
+            boxShadow: '0 6px 20px rgba(0, 212, 255, 0.4)',
+            transform: 'translateY(-2px)',
+          },
+        },
+        outlined: {
+          borderColor: 'rgba(0, 212, 255, 0.5)',
+          color: '#00d4ff',
+          '&:hover': {
+            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(0, 212, 255, 0.08)',
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            '& fieldset': {
+              borderColor: 'rgba(0, 0, 0, 0.1)',
+            },
+            '&:hover fieldset': {
+              borderColor: 'rgba(0, 212, 255, 0.5)',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#00d4ff',
+            },
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          backdropFilter: 'blur(10px)',
         },
       },
     },
   },
 });
 
-// Dark theme
+// Dark theme with futuristic glassmorphism
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#818cf8', // var(--color-chart-1) - lighter for dark mode
-      light: '#a5b4fc',
-      dark: '#6366f1',
+      main: '#00d4ff', // Cyan
+      light: '#33ddff',
+      dark: '#00a8cc',
     },
     secondary: {
-      main: '#6b7280', // var(--color-chart-2)
+      main: '#7c3aed', // Purple
+      light: '#9d5eff',
+      dark: '#5b21b6',
     },
     success: {
-      main: '#34d399', // var(--color-success)
+      main: '#34d399',
       light: '#6ee7b7',
     },
     warning: {
-      main: '#fbbf24', // var(--color-warning)
+      main: '#fbbf24',
       light: '#fcd34d',
     },
     info: {
-      main: '#60a5fa', // var(--color-info)
-      light: '#93c5fd',
+      main: '#00d4ff',
+      light: '#60a5fa',
     },
     error: {
-      main: '#f87171', // var(--color-danger)
+      main: '#ef4444',
+      light: '#f87171',
     },
     background: {
-      default: '#111827', // var(--color-bg)
-      paper: '#1f2937', // var(--color-card-bg)
+      default: '#0a0e27', // Dark navy
+      paper: 'rgba(255, 255, 255, 0.05)', // Glassmorphism
     },
     text: {
-      primary: '#f9fafb', // var(--color-text)
-      secondary: '#d1d5db', // var(--color-text-secondary)
-      disabled: '#9ca3af', // var(--color-text-muted)
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+      disabled: 'rgba(255, 255, 255, 0.5)',
     },
-    divider: '#374151', // var(--color-border)
+    divider: 'rgba(255, 255, 255, 0.1)',
     action: {
-      hover: '#374151', // var(--color-bg-accent)
+      hover: 'rgba(255, 255, 255, 0.08)',
+      selected: 'rgba(0, 212, 255, 0.16)',
     },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          backgroundColor: '#111827',
-          color: '#f9fafb',
+          background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+          backgroundAttachment: 'fixed',
+          color: '#ffffff',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        contained: {
+          background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
+          boxShadow: '0 8px 20px rgba(0, 212, 255, 0.3)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%)',
+            boxShadow: '0 12px 30px rgba(0, 212, 255, 0.4)',
+            transform: 'translateY(-2px)',
+          },
+        },
+        outlined: {
+          borderColor: 'rgba(0, 212, 255, 0.5)',
+          color: '#00d4ff',
+          '&:hover': {
+            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            '& fieldset': {
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
+            '&:hover fieldset': {
+              borderColor: 'rgba(0, 212, 255, 0.5)',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#00d4ff',
+            },
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          backdropFilter: 'blur(10px)',
         },
       },
     },
