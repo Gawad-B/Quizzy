@@ -1,6 +1,6 @@
 // useAuthQuery.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authAPI, type User, type LoginCredentials, type SignupCredentials } from '../services/authService';
+import { authAPI, type SignupCredentials } from '../services/authService';
 
 // Query keys
 export const authKeys = {

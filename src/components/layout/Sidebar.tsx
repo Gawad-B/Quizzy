@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import type { FC } from 'react';
 import {
   Drawer,
   List,
@@ -8,7 +8,6 @@ import {
   ListItemText,
   Box,
   Typography,
-  Divider,
   useMediaQuery,
   IconButton,
   Toolbar,
@@ -36,7 +35,7 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
+const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
   const { theme, isDarkMode, toggleTheme } = useTheme();
   const { logout, user, isLoggingOut } = useAuthQuery();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -170,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
                 mb: 0.5
               }}
             >
-              {user.name}
+              {user.first_name} {user.last_name}
             </Typography>
             <Typography
               variant="caption"

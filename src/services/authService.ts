@@ -1,11 +1,11 @@
-// authService.ts
-import { MOCK_USERS, delay } from './mockData';
+import { http } from '../lib/http';
 import type { User } from './mockData';
 
 interface AuthResponse {
   success: boolean;
   message?: string;
   user?: User;
+  token?: string;
 }
 
 interface LoginCredentials {
@@ -19,70 +19,132 @@ interface SignupCredentials {
   email: string;
   password: string;
   phone?: string;
-  grade?: string;
+  grade: string;
   graduation_year?: string;
-  nationality?: string;
-  university?: string;
+  nationality: string;
+  university: string;
 }
 
-// API functions
+interface PasswordResetRequestPayload {
+  email: string;
+}
+
+interface PasswordResetConfirmPayload {
+  oobCode: string;
+  newPassword: string;
+}
+
+interface ResendVerificationPayload {
+  email: string;
+  password: string;
+}
+
+interface ApplyActionPayload {
+  mode: 'verifyEmail' | 'recoverEmail';
+  oobCode: string;
+}
+
 export const authAPI = {
   // Get current user
   getCurrentUser: async (): Promise<{ success: boolean; user?: User; message?: string }> => {
-    await delay(500); // Simulate network delay
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      const user = MOCK_USERS.find(u => u.email === token);
-      if (user) return { success: true, user };
+    try {
+      const data = await http<{ success: boolean; user?: User; message?: string }>('/api/auth/me');
+      return data;
+    } catch (error) {
+      return { success: false, message: 'Not authenticated' };
     }
-    return { success: false, message: 'Not authenticated' };
   },
 
   // Login
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    await delay(800);
-    const user = MOCK_USERS.find(u => u.email === credentials.email);
-
-    if (user) {
-      if (credentials.password === 'password123' || credentials.password.length >= 6) {
-        localStorage.setItem('auth_token', user.email);
-        return { success: true, user };
+    try {
+      const data = await http<AuthResponse>('/api/auth/login', {
+        method: 'POST',
+        body: credentials,
+      });
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
       }
-      return { success: false, message: 'Invalid password' };
+      return data;
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Login failed' };
     }
-    return { success: false, message: 'User not found' };
   },
 
   // Signup
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
-    await delay(800);
-    if (MOCK_USERS.find(u => u.email === credentials.email)) {
-      return { success: false, message: 'Email already exists' };
+    try {
+      const data = await http<AuthResponse>('/api/auth/signup', {
+        method: 'POST',
+        body: credentials,
+      });
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+      return data;
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Signup failed' };
     }
+  },
 
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      first_name: credentials.first_name,
-      last_name: credentials.last_name,
-      email: credentials.email,
-      phone: credentials.phone,
-      grade: credentials.grade,
-      graduation_year: credentials.graduation_year,
-      nationality: credentials.nationality,
-      university: credentials.university,
-      created_at: new Date().toISOString(),
-    };
-    MOCK_USERS.push(newUser);
-    localStorage.setItem('auth_token', newUser.email);
-    return { success: true, user: newUser };
+  requestPasswordReset: async (payload: PasswordResetRequestPayload): Promise<AuthResponse> => {
+    try {
+      return await http<AuthResponse>('/api/auth/password-reset/request', {
+        method: 'POST',
+        body: payload,
+      });
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Failed to send password reset email' };
+    }
+  },
+
+  confirmPasswordReset: async (payload: PasswordResetConfirmPayload): Promise<AuthResponse> => {
+    try {
+      return await http<AuthResponse>('/api/auth/password-reset/confirm', {
+        method: 'POST',
+        body: payload,
+      });
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Failed to reset password' };
+    }
+  },
+
+  resendVerificationEmail: async (payload: ResendVerificationPayload): Promise<AuthResponse> => {
+    try {
+      return await http<AuthResponse>('/api/auth/email-verification/resend', {
+        method: 'POST',
+        body: payload,
+      });
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Failed to resend verification email' };
+    }
+  },
+
+  applyActionCode: async (payload: ApplyActionPayload): Promise<AuthResponse> => {
+    try {
+      return await http<AuthResponse>('/api/auth/action/apply', {
+        method: 'POST',
+        body: payload,
+      });
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Failed to process email action' };
+    }
   },
 
   // Logout
   logout: async (): Promise<{ success: boolean; message?: string }> => {
-    await delay(300);
     localStorage.removeItem('auth_token');
     return { success: true, message: 'Logged out successfully' };
   },
 };
 
-export type { User, AuthResponse, LoginCredentials, SignupCredentials };
+export type {
+  User,
+  AuthResponse,
+  LoginCredentials,
+  SignupCredentials,
+  PasswordResetRequestPayload,
+  PasswordResetConfirmPayload,
+  ResendVerificationPayload,
+  ApplyActionPayload,
+};

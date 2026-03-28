@@ -16,7 +16,7 @@ import {
   FormHelperText,
   Chip
 } from '@mui/material';
-import { School as SubjectIcon, Book as ChapterIcon, Quiz as QuizIcon, Help as QuestionIcon } from '@mui/icons-material';
+import { School as SubjectIcon, Quiz as QuizIcon, Help as QuestionIcon } from '@mui/icons-material';
 
 interface QuizDetailsProps {
   details: {
@@ -108,7 +108,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
     onDetailsChange({ ...details, quizName: event.target.value });
   };
 
-  const handleQuestionCountChange = (event: Event, newValue: number | number[]) => {
+  const handleQuestionCountChange = (_event: Event, newValue: number | number[]) => {
     onDetailsChange({ ...details, questionCount: newValue as number });
   };
 
@@ -134,7 +134,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
 
       <Grid container spacing={4}>
         {/* Subject Selection */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={1} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
               <SubjectIcon sx={{ color: 'primary.main' }} />
@@ -189,7 +189,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
         </Grid>
 
         {/* Quiz Name & Questions */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={1} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
               <QuizIcon sx={{ color: 'primary.main' }} />
@@ -260,22 +260,22 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
             Quiz Summary
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Typography variant="body2" sx={{ color: 'success.dark' }}>
                 <strong>Subject:</strong> {subjectsData[details.subject as keyof typeof subjectsData]?.name}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Typography variant="body2" sx={{ color: 'success.dark' }}>
                 <strong>Chapters:</strong> {details.chapters.join(', ')}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Typography variant="body2" sx={{ color: 'success.dark' }}>
                 <strong>Quiz Name:</strong> {details.quizName}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Typography variant="body2" sx={{ color: 'success.dark' }}>
                 <strong>Questions:</strong> {details.questionCount}
               </Typography>

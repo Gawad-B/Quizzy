@@ -1,231 +1,157 @@
-import React, { useState, useMemo } from 'react';
-import { MOCK_QUIZ_HISTORY, type Quiz } from '../../services/mockData';
+import { useMemo, useState } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  Chip,
+  Avatar,
+  Pagination,
+} from '@mui/material';
+import { useTheme } from '../../context/ThemeContext';
+import { useQuery } from '@tanstack/react-query';
+import { userAPI } from '../../services/userService';
 
 const History = () => {
+  const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Finished' | 'Unfinished'>('All');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
+
+  const { data: quizzes = [], isLoading, error } = useQuery({
+    queryKey: ['quizzes', 'me'],
+    queryFn: () => userAPI.getQuizzes('me'),
+    retry: false,
+  });
 
   const filteredQuizzes = useMemo(() => {
-    return MOCK_QUIZ_HISTORY.filter(quiz => {
-      const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quiz.subject.toLowerCase().includes(searchTerm.toLowerCase());
+    return quizzes.filter((quiz) => {
+      const subject = quiz.subject ?? 'General';
+      const matchesSearch =
+        quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        subject.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesTab = activeTab === 'All' || quiz.status === activeTab;
       return matchesSearch && matchesTab;
     });
-  }, [searchTerm, activeTab]);
+  }, [quizzes, searchTerm, activeTab]);
 
-  const totalPages = Math.ceil(filteredQuizzes.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredQuizzes.length / itemsPerPage));
   const currentQuizzes = filteredQuizzes.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleTabChange = (value: 'All' | 'Finished' | 'Unfinished') => {
+    setActiveTab(value);
+    setCurrentPage(1);
   };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{
-        fontSize: '2rem',
-        fontWeight: '700',
-        marginBottom: '2rem',
-        color: 'var(--color-text)'
-      }}>
-        Previous Quizzes
-      </h1>
+    <Box className="dashboard-page" sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
+      <Typography variant="h3" sx={{ fontWeight: 700, mb: { xs: 2, md: 3 }, color: theme.palette.text.primary }}>
+        Quiz History
+      </Typography>
 
-      {/* Controls Section */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        {/* Search Bar */}
-        <div style={{ position: 'relative', width: '300px' }}>
-          <input
-            type="text"
-            placeholder="Search..."
+      <Paper elevation={2} sx={{ p: { xs: 1.5, md: 2 }, borderRadius: 3, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+          <TextField
+            label="Search quizzes"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem 0.75rem 2.5rem',
-              borderRadius: '8px',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg-secondary)',
-              color: 'var(--color-text)',
-              fontSize: '1rem'
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
             }}
+            size="small"
+            sx={{ minWidth: { xs: '100%', sm: 280 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}
           />
-          <span style={{
-            position: 'absolute',
-            left: '0.75rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--color-text-secondary)'
-          }}>
-            🔍
-          </span>
-        </div>
 
-        {/* Tabs */}
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          background: 'var(--color-bg-secondary)',
-          padding: '0.25rem',
-          borderRadius: '8px'
-        }}>
-          {(['All', 'Finished', 'Unfinished'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '0.5rem 1.5rem',
-                borderRadius: '6px',
-                border: 'none',
-                background: activeTab === tab ? 'var(--color-card-bg)' : 'transparent',
-                color: activeTab === tab ? 'var(--color-text)' : 'var(--color-text-secondary)',
-                fontWeight: activeTab === tab ? '600' : '400',
-                cursor: 'pointer',
-                boxShadow: activeTab === tab ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {(['All', 'Finished', 'Unfinished'] as const).map((tab) => (
+              <Button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                variant={activeTab === tab ? 'contained' : 'outlined'}
+                size="small"
+                className="cool-filter-btn"
+                sx={{
+                  minWidth: 96,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                {tab}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+      </Paper>
 
-      {/* Quiz List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {currentQuizzes.map((quiz) => (
-          <div key={quiz.id} style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: 'var(--color-card-bg)',
-            borderRadius: '12px',
-            padding: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-            border: '1px solid var(--color-border)'
-          }}>
-            {/* Image */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              marginRight: '1.5rem',
-              flexShrink: 0
-            }}>
-              <img
-                src={quiz.image}
-                alt={quiz.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1 }}>
-              <h3 style={{
-                margin: '0 0 0.25rem 0',
-                fontSize: '1.1rem',
-                fontWeight: '600',
-                color: 'var(--color-text)'
-              }}>
-                {quiz.title}
-              </h3>
-              <p style={{
-                margin: 0,
-                color: 'var(--color-text-secondary)',
-                fontSize: '0.9rem'
-              }}>
-                {quiz.subject} • {new Date(quiz.date).toLocaleDateString()}
-              </p>
-            </div>
-
-            {/* Status/Score */}
-            <div style={{ textAlign: 'right' }}>
-              {quiz.status === 'Finished' ? (
-                <div>
-                  <div style={{
-                    fontSize: '1.25rem',
-                    fontWeight: '700',
-                    color: quiz.score >= 80 ? 'var(--color-success)' : quiz.score >= 60 ? 'var(--color-warning)' : 'var(--color-danger)'
-                  }}>
-                    {quiz.score}%
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
-                    {quiz.totalQuestions} Questions
-                  </div>
-                </div>
-              ) : (
-                <div style={{
-                  padding: '0.5rem 1rem',
-                  background: 'var(--color-bg-secondary)',
-                  borderRadius: '20px',
-                  color: 'var(--color-text-secondary)',
-                  fontSize: '0.9rem',
-                  fontWeight: '500'
-                }}>
-                  Unfinished
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {currentQuizzes.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: '3rem',
-            color: 'var(--color-text-secondary)'
-          }}>
-            No quizzes found matching your criteria.
-          </div>
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '0.5rem',
-          marginTop: '2rem'
-        }}>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                border: 'none',
-                background: currentPage === page ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                color: currentPage === page ? 'white' : 'var(--color-text)',
-                cursor: 'pointer',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
+      {isLoading && (
+        <Typography sx={{ color: theme.palette.text.secondary }}>Loading your quiz history...</Typography>
       )}
-    </div>
+
+      {error && (
+        <Typography color="error">Failed to load quiz history. Please try again.</Typography>
+      )}
+
+      {!isLoading && !error && (
+        <Box sx={{ display: 'grid', gap: 1.5 }}>
+          {currentQuizzes.length === 0 && (
+            <Paper elevation={1} sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 3 }}>
+              <Typography sx={{ color: theme.palette.text.secondary }}>
+                No quizzes found. Create your first quiz to see history here.
+              </Typography>
+            </Paper>
+          )}
+
+          {currentQuizzes.map((quiz) => (
+            <Paper key={quiz.id} className="history-card" elevation={2} sx={{ p: 2, borderRadius: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar
+                  variant="rounded"
+                  src={quiz.image ?? 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80&w=300&h=200'}
+                  alt={quiz.title}
+                  sx={{ width: 72, height: 72 }}
+                />
+
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                    {quiz.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    {(quiz.subject ?? 'General')} • {new Date(quiz.date).toLocaleDateString()}
+                  </Typography>
+                </Box>
+
+                {quiz.status === 'Finished' ? (
+                  <Chip
+                    label={`${quiz.score}% (${quiz.totalQuestions} Q)`}
+                    color={quiz.score >= 70 ? 'success' : 'warning'}
+                    sx={{ fontWeight: 600 }}
+                  />
+                ) : (
+                  <Chip label="Unfinished" color="default" sx={{ fontWeight: 600 }} />
+                )}
+              </Box>
+            </Paper>
+          ))}
+
+          {filteredQuizzes.length > itemsPerPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(_, page) => setCurrentPage(page)}
+                color="primary"
+              />
+            </Box>
+          )}
+        </Box>
+      )}
+    </Box>
   );
 };
 

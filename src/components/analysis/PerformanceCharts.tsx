@@ -4,22 +4,22 @@ import { useTheme } from '../../context/ThemeContext';
 
 interface PerformanceChartsProps {
   subjectId: string;
+  performance?: {
+    overallScore: number;
+    strongAreas: string[];
+    weakAreas: string[];
+    questionTypes: Record<string, number>;
+  };
 }
 
-const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId }) => {
+const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId, performance }) => {
   const { theme } = useTheme();
 
-  // Mock data - in real app this would come from API
-  const mockData = {
-    overallScore: 78,
-    monthlyProgress: [65, 68, 72, 75, 78, 80],
-    strongAreas: ['Algebra', 'Geometry'],
-    weakAreas: ['Calculus', 'Trigonometry'],
-    questionTypes: {
-      'Multiple Choice': 85,
-      'Problem Solving': 70,
-      'True/False': 90
-    }
+  const data = performance ?? {
+    overallScore: 0,
+    strongAreas: [],
+    weakAreas: [],
+    questionTypes: {},
   };
 
   return (
@@ -32,7 +32,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId }) => {
         {/* Overall Score */}
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
           <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
-            {mockData.overallScore}%
+            {data.overallScore}%
           </Typography>
           <Typography variant="h6" sx={{ mb: 1 }}>
             Overall Score
@@ -47,7 +47,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId }) => {
           <Typography variant="h6" sx={{ mb: 2 }}>
             Question Type Performance
           </Typography>
-          {Object.entries(mockData.questionTypes).map(([type, score]) => (
+          {Object.entries(data.questionTypes).map(([type, score]) => (
             <Box key={type} sx={{ mb: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2">{type}</Typography>
@@ -78,7 +78,8 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId }) => {
           <Typography variant="h6" sx={{ mb: 2, color: theme.palette.success.main }}>
             Strong Areas
           </Typography>
-          {mockData.strongAreas.map((area) => (
+          {data.strongAreas.length === 0 && <Typography variant="body2">No strong areas yet.</Typography>}
+          {data.strongAreas.map((area) => (
             <Typography key={area} variant="body2" sx={{ mb: 1 }}>
               ✅ {area}
             </Typography>
@@ -90,7 +91,8 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId }) => {
           <Typography variant="h6" sx={{ mb: 2, color: theme.palette.warning.main }}>
             Areas for Improvement
           </Typography>
-          {mockData.weakAreas.map((area) => (
+          {data.weakAreas.length === 0 && <Typography variant="body2">No weak areas yet.</Typography>}
+          {data.weakAreas.map((area) => (
             <Typography key={area} variant="body2" sx={{ mb: 1 }}>
               ⚠️ {area}
             </Typography>

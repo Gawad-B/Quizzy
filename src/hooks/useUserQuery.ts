@@ -9,7 +9,7 @@ export const useUserQuery = (userId: string | undefined) => {
       if (!userId) return null;
 
       try {
-        const data = await userAPI.getById(userId);
+        const data = await userAPI.getById();
         return data;
       } catch (error) {
         throw new Error(`Failed to fetch user with id: ${userId}`);

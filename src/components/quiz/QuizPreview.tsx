@@ -1,11 +1,11 @@
-import React from 'react';
+import type { FC } from 'react';
 import { 
   Box, 
   Typography, 
   Grid, 
   Paper, 
   Chip, 
-  Divider,
+  Button,
   List,
   ListItem,
   ListItemIcon,
@@ -43,7 +43,7 @@ interface QuizPreviewProps {
   onGenerate: () => void;
 }
 
-const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
+const QuizPreview: FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
   const subjectsData = {
     math: 'Mathematics',
     science: 'Science',
@@ -77,7 +77,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
       {/* Quiz Configuration Summary */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {/* Settings */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={2} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
               <AccessTimeIcon sx={{ color: 'primary.main' }} />
@@ -116,7 +116,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
         </Grid>
 
         {/* Exam Mode */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={2} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
               {getExamModeInfo().icon}
@@ -157,7 +157,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
         </Typography>
         
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <SubjectIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
@@ -169,7 +169,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
             </Box>
           </Grid>
           
-                     <Grid item xs={12} sm={6} md={3}>
+                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
              <Box sx={{ textAlign: 'center', p: 2 }}>
                <ChapterIcon sx={{ fontSize: 32, color: 'info.main', mb: 1 }} />
                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
@@ -181,7 +181,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
              </Box>
            </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <QuizIcon sx={{ fontSize: 32, color: 'success.main', mb: 1 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
@@ -193,7 +193,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
             </Box>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <QuestionIcon sx={{ fontSize: 32, color: 'warning.main', mb: 1 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
@@ -222,7 +222,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
           Estimated Quiz Information
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               <strong>Estimated Duration:</strong> {quizData.settings.isTimed 
                 ? `${quizData.settings.timeLimit || 30} minutes`
@@ -230,23 +230,29 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
               }
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               <strong>Difficulty:</strong> Mixed (based on your performance)
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               <strong>Question Types:</strong> Multiple choice, problem solving
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               <strong>Progress Tracking:</strong> Enabled
             </Typography>
           </Grid>
         </Grid>
       </Paper>
+
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button variant="contained" onClick={onGenerate}>
+          Generate Now
+        </Button>
+      </Box>
     </Box>
   );
 };

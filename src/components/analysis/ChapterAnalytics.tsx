@@ -3,47 +3,19 @@ import { Box, Typography, Card, CardContent, Chip, LinearProgress, Grid } from '
 import { TrendingUp as TrendingIcon, TrendingDown as TrendingDownIcon } from '@mui/icons-material';
 
 interface ChapterAnalyticsProps {
-  subjectId: string;
+  chapters?: Array<{
+    id: string;
+    name: string;
+    score: number;
+    questions: number;
+    correct: number;
+    wrong: number;
+    trend: 'up' | 'down';
+    timeSpent: number;
+  }>;
 }
 
-const ChapterAnalytics: React.FC<ChapterAnalyticsProps> = ({ subjectId }) => {
-  // Mock data for chapters - in real app this would come from API
-  const chapterData = {
-    math: [
-      { name: 'Algebra Basics', score: 92, questions: 45, correct: 41, wrong: 4, trend: 'up', timeSpent: 180 },
-      { name: 'Linear Equations', score: 88, questions: 38, correct: 33, wrong: 5, trend: 'up', timeSpent: 165 },
-      { name: 'Quadratic Functions', score: 78, questions: 42, correct: 33, wrong: 9, trend: 'down', timeSpent: 200 },
-      { name: 'Geometry', score: 95, questions: 35, correct: 33, wrong: 2, trend: 'up', timeSpent: 140 },
-      { name: 'Trigonometry', score: 82, questions: 28, correct: 23, wrong: 5, trend: 'up', timeSpent: 175 },
-      { name: 'Calculus Intro', score: 75, questions: 25, correct: 19, wrong: 6, trend: 'down', timeSpent: 190 }
-    ],
-    science: [
-      { name: 'Physics Fundamentals', score: 85, questions: 40, correct: 34, wrong: 6, trend: 'up', timeSpent: 160 },
-      { name: 'Chemistry Basics', score: 90, questions: 35, correct: 32, wrong: 3, trend: 'up', timeSpent: 145 },
-      { name: 'Biology Systems', score: 88, questions: 38, correct: 33, wrong: 5, trend: 'up', timeSpent: 155 },
-      { name: 'Earth Science', score: 82, questions: 30, correct: 25, wrong: 5, trend: 'down', timeSpent: 170 }
-    ],
-    history: [
-      { name: 'Ancient Civilizations', score: 92, questions: 32, correct: 29, wrong: 3, trend: 'up', timeSpent: 140 },
-      { name: 'Medieval Period', score: 88, questions: 28, correct: 25, wrong: 3, trend: 'up', timeSpent: 135 },
-      { name: 'Modern History', score: 85, questions: 35, correct: 30, wrong: 5, trend: 'up', timeSpent: 150 },
-      { name: 'World Wars', score: 90, questions: 30, correct: 27, wrong: 3, trend: 'up', timeSpent: 145 }
-    ],
-    literature: [
-      { name: 'Classic Novels', score: 88, questions: 25, correct: 22, wrong: 3, trend: 'up', timeSpent: 120 },
-      { name: 'Poetry Analysis', score: 82, questions: 20, correct: 16, wrong: 4, trend: 'down', timeSpent: 130 },
-      { name: 'Shakespeare', score: 85, questions: 22, correct: 19, wrong: 3, trend: 'up', timeSpent: 125 },
-      { name: 'Modern Literature', score: 90, questions: 18, correct: 16, wrong: 2, trend: 'up', timeSpent: 110 }
-    ],
-    geography: [
-      { name: 'World Geography', score: 88, questions: 30, correct: 26, wrong: 4, trend: 'up', timeSpent: 140 },
-      { name: 'Physical Geography', score: 85, questions: 25, correct: 21, wrong: 4, trend: 'up', timeSpent: 135 },
-      { name: 'Human Geography', score: 82, questions: 28, correct: 23, wrong: 5, trend: 'down', timeSpent: 150 },
-      { name: 'Economic Geography', score: 90, questions: 22, correct: 20, wrong: 2, trend: 'up', timeSpent: 125 }
-    ]
-  };
-
-  const chapters = chapterData[subjectId as keyof typeof chapterData] || [];
+const ChapterAnalytics: React.FC<ChapterAnalyticsProps> = ({ chapters = [] }) => {
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return '#4caf50';
@@ -61,8 +33,13 @@ const ChapterAnalytics: React.FC<ChapterAnalyticsProps> = ({ subjectId }) => {
   return (
     <Box>
       <Grid container spacing={3}>
+        {chapters.length === 0 && (
+          <Grid size={{ xs: 12 }}>
+            <Typography sx={{ opacity: 0.8 }}>No chapter analytics yet for this subject.</Typography>
+          </Grid>
+        )}
         {chapters.map((chapter, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
             <Card sx={{ 
               height: '100%',
               border: `1px solid ${getScoreColor(chapter.score)}20`,

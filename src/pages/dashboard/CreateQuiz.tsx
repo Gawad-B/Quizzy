@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Typography, Paper, Stepper, Step, StepLabel, Button } from '@mui/material';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';

@@ -1,73 +1,132 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-=======
 # Quizzy
->>>>>>> 1b6e900 (Initial commit)
+
+Quizzy is a full-stack quiz application with a React + Vite frontend, Express backend, and PostgreSQL database.
+
+## Project Structure
+
+- `src/`: Frontend app (React + TypeScript)
+- `backend/`: Backend API (Express + PostgreSQL)
+- `database.sql`: Database schema and seed SQL
+
+### Backend Structure
+
+- `backend/src/config/`: environment and database configuration
+- `backend/src/middleware/`: auth middleware
+- `backend/src/routes/`: API route modules
+- `backend/src/app.js`: express app wiring
+- `backend/src/server.js`: server bootstrap + graceful shutdown
+
+## Prerequisites
+
+- Node.js 20+
+- npm 10+
+- PostgreSQL 14+
+- Firebase project (Authentication enabled)
+
+## Local Setup
+
+1. Install frontend dependencies:
+
+```bash
+npm install
+```
+
+2. Install backend dependencies:
+
+```bash
+npm --prefix backend install
+```
+
+3. Configure environment files:
+
+```bash
+cp .env.example .env
+cp backend/.env.example backend/.env
+```
+
+4. Update `backend/.env` with your real PostgreSQL credentials.
+	Set `FIREBASE_API_KEY` from your Firebase project config.
+	In Firebase Console, enable Email/Password sign-in method and require email verification in your auth flow.
+
+5. Create database and run schema:
+
+```bash
+psql -U postgres -d quizzy -f database.sql
+```
+
+6. Start backend API:
+
+```bash
+npm --prefix backend run dev
+```
+
+7. Start frontend:
+
+```bash
+npm run dev
+```
+
+## Production Build
+
+Frontend build:
+
+```bash
+npm run build
+```
+
+Backend run:
+
+```bash
+npm --prefix backend run start
+```
+
+## Health Check
+
+API health endpoint:
+
+```bash
+GET /api/health
+```
+
+Example:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+## Deployment Notes
+
+- Set `VITE_API_URL` to your deployed API URL.
+- Set `CORS_ORIGIN` in backend to your frontend domain.
+- Never commit real `.env` files.
+- Use a strong random `JWT_SECRET` in production.
+
+## Core API Endpoints
+
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `POST /api/auth/password-reset/request`
+- `POST /api/auth/password-reset/confirm`
+- `POST /api/auth/email-verification/resend`
+- `POST /api/auth/action/apply`
+- `GET /api/auth/me`
+- `GET /api/users/me/quizzes`
+- `POST /api/users/seed`
+- `GET /api/health`
+
+## Firebase Email Template Setup
+
+Quizzy now supports password recovery, email verification, and email recovery action links.
+
+1. Open Firebase Console -> Authentication -> Templates.
+2. For each template (Password reset, Email address verification, Email address change revocation):
+	- Customize sender name, sender address, reply-to, subject, and message body.
+	- Use placeholders like `%DISPLAY_NAME%`, `%APP_NAME%`, `%LINK%`, `%EMAIL%`, and `%NEW_EMAIL%` where needed.
+3. In each template, click Customize action URL and set:
+	- `http://localhost:5173/auth/action` for local development.
+	- Your production frontend URL for deployed environments.
+4. Firebase appends `mode` and `oobCode` automatically, and the app handles:
+	- `mode=resetPassword`
+	- `mode=verifyEmail`
+	- `mode=recoverEmail`
+5. Optional: customize sender domain in Firebase Templates by verifying your domain.

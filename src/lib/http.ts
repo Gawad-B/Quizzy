@@ -7,7 +7,7 @@ function getToken(): string | null {
 
 export async function http<T>(
   path: string,
-  options: RequestInit & { body?: any } = {}
+  options: Omit<RequestInit, "body"> & { body?: unknown } = {}
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -26,8 +26,17 @@ export async function http<T>(
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(errorText || res.statusText);
+    let errorMessage = res.statusText;
+
+    try {
+      const errorJson = (await res.json()) as { message?: string; error?: string };
+      errorMessage = errorJson?.message || errorJson?.error || errorMessage;
+    } catch {
+      const errorText = await res.text();
+      if (errorText) errorMessage = errorText;
+    }
+
+    throw new Error(errorMessage || 'Request failed');
   }
 
   return (await res.json()) as T;

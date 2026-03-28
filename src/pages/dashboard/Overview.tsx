@@ -28,40 +28,33 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import StatCard from '../../components/ui/StatCard';
 import SubjectCard from '../../components/layout/SubjectCard';
+import { useOverviewQuery } from '../../hooks/useOverviewQuery';
 
 const Overview = () => {
   const { theme } = useTheme();
+  const { data: studentStats, isLoading, error } = useOverviewQuery();
 
-  // Mock data - in real app this would come from API/database
-  const studentStats = {
-    totalQuizzes: 24,
-    totalQuestions: 156,
-    correctAnswers: 128,
-    wrongAnswers: 23,
-    partialAnswers: 5,
-    averageScore: 82.1,
-    totalTime: 1240, // minutes
-    averageTimePerQuestion: 7.9, // minutes
-    currentStreak: 8,
-    bestStreak: 15,
-    subjects: [
-      { name: 'Mathematics', score: 89, questions: 45, correct: 40, wrong: 5 },
-      { name: 'Science', score: 78, questions: 38, correct: 30, wrong: 8 },
-      { name: 'History', score: 92, questions: 28, correct: 26, wrong: 2 },
-      { name: 'Literature', score: 75, questions: 25, correct: 19, wrong: 6 },
-      { name: 'Geography', score: 85, questions: 20, correct: 17, wrong: 3 }
-    ],
-    recentQuizzes: [
-      { name: 'Algebra Quiz #12', score: 95, date: '2024-01-15', time: 18, questions: 20 },
-      { name: 'Physics Test #8', score: 82, date: '2024-01-14', time: 25, questions: 25 },
-      { name: 'World History #15', score: 88, date: '2024-01-13', time: 22, questions: 30 },
-      { name: 'Chemistry Quiz #6', score: 76, date: '2024-01-12', time: 28, questions: 20 },
-      { name: 'English Literature #9', score: 91, date: '2024-01-11', time: 20, questions: 25 }
-    ]
-  };
+  if (isLoading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography sx={{ color: theme.palette.text.secondary }}>Loading overview...</Typography>
+      </Box>
+    );
+  }
+
+  if (error || !studentStats) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error">Failed to load overview data.</Typography>
+      </Box>
+    );
+  }
 
   const calculateAccuracy = () => {
     const total = studentStats.correctAnswers + studentStats.wrongAnswers + studentStats.partialAnswers;
+    if (total === 0) {
+      return { correct: '0.0', wrong: '0.0', partial: '0.0' };
+    }
     return {
       correct: (studentStats.correctAnswers / total * 100).toFixed(1),
       wrong: (studentStats.wrongAnswers / total * 100).toFixed(1),
@@ -85,7 +78,7 @@ const Overview = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box className="dashboard-page" sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h3" component="h1" sx={{ 
@@ -298,8 +291,8 @@ const Overview = () => {
                 </Typography>
               </Box>
               <Chip 
-                label="+12.5%" 
-                color="success" 
+                label={studentStats.totalQuizzes === 0 ? 'No data yet' : studentStats.averageScore >= 70 ? '+Improving' : 'Needs focus'} 
+                color={studentStats.totalQuizzes === 0 ? 'default' : studentStats.averageScore >= 70 ? 'success' : 'warning'} 
                 size="small"
                 sx={{ fontWeight: 600 }}
               />
@@ -318,7 +311,9 @@ const Overview = () => {
                 🎯 Goal Achievement
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                You're on track to complete 30 quizzes this month!
+                {studentStats.totalQuizzes > 0
+                  ? `You completed ${studentStats.totalQuizzes} quizzes so far.`
+                  : 'Start your first quiz to unlock detailed insights.'}
               </Typography>
             </Box>
           </Box>
@@ -353,6 +348,9 @@ const Overview = () => {
         </Typography>
         
         <List>
+          {studentStats.recentQuizzes.length === 0 && (
+            <Typography sx={{ color: theme.palette.text.secondary }}>No quizzes yet.</Typography>
+          )}
           {studentStats.recentQuizzes.map((quiz, index) => (
             <React.Fragment key={index}>
               <ListItem sx={{ 
@@ -399,7 +397,7 @@ const Overview = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TimeIcon sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
                         <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                          {formatTime(quiz.time)}
+                          {formatTime(quiz.questions * 2)}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Typography, Paper, Button, RadioGroup, FormControlLabel, Radio, FormControl, Chip, LinearProgress, TextField, Alert, Collapse } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowBack as ArrowBackIcon, Timer as TimerIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
 import { useTheme } from '../../context/ThemeContext';
 
 const Quiz = () => {

@@ -1,17 +1,15 @@
-import React, { useEffect } from 'react';
 import {
   Box,
   Typography,
   Paper,
   Button,
   Chip,
-  Avatar,
-  Divider
+  Avatar
 } from '@mui/material';
 import {
   Quiz as QuizIcon,
   TrendingUp as TrendingIcon,
-  Group as GroupIcon,
+  Help as QuestionsIcon,
   EmojiEvents as TrophyIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
@@ -20,11 +18,21 @@ import ThemeToggle from '../../components/ui/ThemeToggle';
 import StatCard from '../../components/ui/StatCard';
 import { useAuthQuery } from '../../hooks/useAuthQuery';
 import { useUserQuery } from "../../hooks/useUserQuery";
+import { useOverviewQuery } from '../../hooks/useOverviewQuery';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const { user: authUser } = useAuthQuery(); // get logged-in user from cache
   const { data: user, isLoading: loading, error } = useUserQuery(authUser?.id);
+  const { data: overview } = useOverviewQuery();
+
+  const totalQuizzes = overview?.totalQuizzes ?? 0;
+  const averageScore = overview?.averageScore ?? 0;
+  const totalQuestions = overview?.totalQuestions ?? 0;
+  const currentStreak = overview?.currentStreak ?? 0;
+  const recentQuizzes = overview?.recentQuizzes ?? [];
 
   if (loading) {
     return (
@@ -35,15 +43,11 @@ const Home = () => {
   }
 
   if (error) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography color="error">Error loading user data</Typography>
-      </Box>
-    );
+    console.error(error);
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box className="dashboard-page" sx={{ p: 3 }}>
       {/* Welcome Header with User Info */}
       <Box sx={{
         mb: 4,
@@ -135,7 +139,7 @@ const Home = () => {
         mb: 4
       }}>
         <StatCard
-          value="12"
+          value={totalQuizzes}
           label="Total Quizzes"
           icon={<QuizIcon />}
           gradient={{
@@ -145,8 +149,8 @@ const Home = () => {
         />
 
         <StatCard
-          value="89%"
-          label="Success Rate"
+          value={`${averageScore}%`}
+          label="Average Score"
           icon={<TrendingIcon />}
           gradient={{
             from: theme.palette.success.main,
@@ -155,9 +159,9 @@ const Home = () => {
         />
 
         <StatCard
-          value="156"
-          label="Participants"
-          icon={<GroupIcon />}
+          value={totalQuestions}
+          label="Questions Answered"
+          icon={<QuestionsIcon />}
           gradient={{
             from: theme.palette.info.main,
             to: theme.palette.info.light
@@ -165,8 +169,8 @@ const Home = () => {
         />
 
         <StatCard
-          value="8"
-          label="Active Rooms"
+          value={currentStreak}
+          label="Current Streak"
           icon={<TrophyIcon />}
           gradient={{
             from: theme.palette.warning.main,
@@ -189,6 +193,7 @@ const Home = () => {
             <Button
               variant="contained"
               startIcon={<QuizIcon />}
+              onClick={() => navigate('/create-quiz')}
               sx={{
                 justifyContent: 'flex-start',
                 py: 1.5,
@@ -208,31 +213,30 @@ const Home = () => {
             Recent Activity
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 2 }}>
-              <QuizIcon sx={{ color: theme.palette.primary.main }} />
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
-                  Math Quiz created
-                </Typography>
-                <Typography variant="caption" sx={{ color: theme.palette.text.disabled }}>
-                  2 hours ago
-                </Typography>
-              </Box>
-              <Chip label="New" size="small" sx={{ bgcolor: theme.palette.success.main, color: 'white' }} />
-            </Box>
+            {recentQuizzes.length === 0 && (
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                No quiz activity yet.
+              </Typography>
+            )}
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 2 }}>
-              <GroupIcon sx={{ color: theme.palette.info.main }} />
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
-                  Science Room joined
-                </Typography>
-                <Typography variant="caption" sx={{ color: theme.palette.text.disabled }}>
-                  1 day ago
-                </Typography>
+            {recentQuizzes.slice(0, 2).map((quiz, index) => (
+              <Box key={`${quiz.name}-${index}`} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 2 }}>
+                <QuizIcon sx={{ color: theme.palette.primary.main }} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
+                    {quiz.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.disabled }}>
+                    {new Date(quiz.date).toLocaleDateString()}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={quiz.status === 'Finished' ? `${quiz.score}%` : 'Unfinished'}
+                  size="small"
+                  sx={{ bgcolor: quiz.status === 'Finished' ? theme.palette.success.main : theme.palette.warning.main, color: 'white' }}
+                />
               </Box>
-              <Chip label="Active" size="small" sx={{ bgcolor: theme.palette.info.main, color: 'white' }} />
-            </Box>
+            ))}
           </Box>
         </Paper>
       </Box>

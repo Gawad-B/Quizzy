@@ -40,7 +40,7 @@ const QuizSettings: React.FC<QuizSettingsProps> = ({ settings, onSettingsChange 
 
       <Grid container spacing={4}>
         {/* Timed Quiz Toggle */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={1} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
               <AccessTimeIcon sx={{ color: 'primary.main' }} />
@@ -55,7 +55,7 @@ const QuizSettings: React.FC<QuizSettingsProps> = ({ settings, onSettingsChange 
                   checked={settings.isTimed}
                   onChange={handleTimedChange}
                   color="primary"
-                  size="large"
+                  size="medium"
                 />
               }
               label={
@@ -90,7 +90,7 @@ const QuizSettings: React.FC<QuizSettingsProps> = ({ settings, onSettingsChange 
         </Grid>
 
         {/* Settings Info */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper elevation={1} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
               Settings Information
