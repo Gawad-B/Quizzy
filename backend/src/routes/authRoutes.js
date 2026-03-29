@@ -193,6 +193,35 @@ async function postFirebaseSafe(endpoint, payload) {
   }
 }
 
+async function applyEmailAction(mode, oobCode) {
+  const normalizedMode = String(mode || '').trim();
+
+  if (!normalizedMode || !oobCode) {
+    return { ok: false, status: 400, message: 'Action mode and code are required.' };
+  }
+
+  if (normalizedMode === 'verifyEmail') {
+    await postFirebase('accounts:update', { oobCode });
+    return { ok: true, message: 'Email verified successfully.' };
+  }
+
+  if (normalizedMode === 'recoverEmail') {
+    const recoverAttempt = await postFirebaseSafe('accounts:resetPassword', { oobCode });
+
+    if (!recoverAttempt.ok) {
+      return {
+        ok: false,
+        status: 400,
+        message: mapFirebaseError(recoverAttempt.message),
+      };
+    }
+
+    return { ok: true, message: 'Email address recovery completed.' };
+  }
+
+  return { ok: false, status: 400, message: 'Unsupported action mode.' };
+}
+
 router.post('/signup', async (req, res) => {
   try {
     const {
@@ -506,44 +535,63 @@ router.post('/email-verification/resend', async (req, res) => {
 router.post('/action/apply', async (req, res) => {
   try {
     const { mode, oobCode } = req.body;
+    const result = await applyEmailAction(mode, oobCode);
 
-    if (!mode || !oobCode) {
-      return res.status(400).json({
+    if (!result.ok) {
+      return res.status(result.status || 400).json({
         success: false,
-        message: 'Action mode and code are required.',
+        message: result.message,
       });
     }
 
-    const normalizedMode = String(mode).trim();
-
-    if (normalizedMode === 'verifyEmail') {
-      await postFirebase('accounts:update', { oobCode });
-      return res.json({ success: true, message: 'Email verified successfully.' });
-    }
-
-    if (normalizedMode === 'recoverEmail') {
-      const recoverAttempt = await postFirebaseSafe('accounts:resetPassword', { oobCode });
-
-      if (!recoverAttempt.ok) {
-        return res.status(400).json({
-          success: false,
-          message: mapFirebaseError(recoverAttempt.message),
-        });
-      }
-
-      return res.json({ success: true, message: 'Email address recovery completed.' });
-    }
-
-    return res.status(400).json({
-      success: false,
-      message: 'Unsupported action mode.',
-    });
+    return res.json({ success: true, message: result.message });
   } catch (error) {
     console.error(error);
     return res.status(400).json({
       success: false,
       message: mapFirebaseError(error?.message),
     });
+  }
+});
+
+router.get('/action', async (req, res) => {
+  try {
+    const { mode, oobCode } = req.query;
+    const result = await applyEmailAction(mode, oobCode);
+
+    if (!result.ok) {
+      return res.status(result.status || 400).send(`
+        <html>
+          <head><title>Quizzy Email Action</title></head>
+          <body style="font-family: sans-serif; padding: 24px;">
+            <h2>Email action failed</h2>
+            <p>${result.message}</p>
+          </body>
+        </html>
+      `);
+    }
+
+    return res.status(200).send(`
+      <html>
+        <head><title>Quizzy Email Action</title></head>
+        <body style="font-family: sans-serif; padding: 24px;">
+          <h2>Success</h2>
+          <p>${result.message}</p>
+          <p>You can now return to the app and sign in.</p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send(`
+      <html>
+        <head><title>Quizzy Email Action</title></head>
+        <body style="font-family: sans-serif; padding: 24px;">
+          <h2>Email action failed</h2>
+          <p>${mapFirebaseError(error?.message)}</p>
+        </body>
+      </html>
+    `);
   }
 });
 

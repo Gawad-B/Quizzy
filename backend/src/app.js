@@ -68,6 +68,11 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '100kb' }));
 
+app.get('/auth/action', (req, res) => {
+  const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  return res.redirect(302, `/api/auth/action${queryString}`);
+});
+
 app.use('/api', systemRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
