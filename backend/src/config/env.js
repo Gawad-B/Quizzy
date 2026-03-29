@@ -40,6 +40,7 @@ export const env = {
   databaseUrl,
   jwtSecret: process.env.JWT_SECRET,
   firebaseApiKey: process.env.FIREBASE_API_KEY,
+  frontendUrl: String(process.env.FRONTEND_URL || '').trim(),
   // For deployment, set CORS_ORIGIN to frontend domain (comma-separated if multiple)
   corsOrigin: process.env.CORS_ORIGIN || '*',
 };

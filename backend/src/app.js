@@ -70,6 +70,12 @@ app.use(express.json({ limit: '100kb' }));
 
 app.get('/auth/action', (req, res) => {
   const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+
+  if (env.frontendUrl) {
+    const base = env.frontendUrl.replace(/\/$/, '');
+    return res.redirect(302, `${base}/auth/action${queryString}`);
+  }
+
   return res.redirect(302, `/api/auth/action${queryString}`);
 });
 
