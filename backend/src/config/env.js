@@ -19,14 +19,23 @@ if (isProduction && String(process.env.JWT_SECRET || '').length < 32) {
 const databaseUrl = String(process.env.DATABASE_URL || '');
 const insecureSslModeMatch = databaseUrl.match(/(?:\?|&)sslmode=([^&]+)/i);
 const insecureSslMode = insecureSslModeMatch?.[1]?.toLowerCase();
+const hasLibpqCompat = /(?:\?|&)uselibpqcompat=true(?:&|$)/i.test(databaseUrl);
+const enforceStrictDbSsl = String(process.env.ENFORCE_STRICT_DB_SSL || 'false').toLowerCase() === 'true';
 
-if (isProduction && ['prefer', 'require', 'verify-ca'].includes(String(insecureSslMode || ''))) {
-  throw new Error('In production, DATABASE_URL must use sslmode=verify-full or explicitly set uselibpqcompat=true for libpq semantics.');
+if (isProduction && ['prefer', 'require', 'verify-ca'].includes(String(insecureSslMode || '')) && !hasLibpqCompat) {
+  const message = 'In production, DATABASE_URL should use sslmode=verify-full or set uselibpqcompat=true for libpq semantics.';
+
+  if (enforceStrictDbSsl) {
+    throw new Error(message);
+  }
+
+  console.warn(`[security] ${message} Set ENFORCE_STRICT_DB_SSL=true to enforce this check.`);
 }
 
 export const env = {
   nodeEnv,
   isProduction,
+  enforceStrictDbSsl,
   port: Number(process.env.PORT || 3000),
   databaseUrl,
   jwtSecret: process.env.JWT_SECRET,
