@@ -52,6 +52,19 @@ Expected response: success true.
 - Backend: Render, Railway, Fly.io, VPS, or container platform
 - Database: Managed PostgreSQL (Neon, Supabase, RDS, Railway)
 
+### Frontend SPA Rewrite Requirement (Important)
+
+Your frontend uses client-side routing (`/auth/action`, `/login`, etc.).
+If your host does not rewrite unknown paths to `index.html`, direct visits to these URLs will return `404`.
+
+- Netlify: include `public/_redirects` with:
+	- `/* /index.html 200`
+- Apache/cPanel: include `public/.htaccess` with rewrite to `index.html`.
+- Nginx: configure:
+	- `try_files $uri $uri/ /index.html;`
+
+Without this rewrite, Firebase email action links pointing to `/auth/action` will fail with `404`.
+
 ## 6. Security Checklist
 
 - Use HTTPS for frontend and backend
