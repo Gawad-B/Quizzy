@@ -24,11 +24,11 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, getScoreColor }) => 
         transition: 'all 0.2s ease-in-out'
       }
     }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <CardContent sx={{ p: { xs: 1.75, sm: 2 } }}>
+        <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', mb: 2, gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
             <SubjectIcon sx={{ color: getScoreColor(subject.score) }} />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1rem', sm: '1.15rem' } }}>
               {subject.name}
             </Typography>
           </Box>
@@ -37,7 +37,8 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, getScoreColor }) => 
             sx={{ 
               bgcolor: getScoreColor(subject.score),
               color: 'white',
-              fontWeight: 600
+              fontWeight: 600,
+              alignSelf: { xs: 'flex-start', sm: 'center' }
             }}
           />
         </Box>
@@ -46,7 +47,7 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, getScoreColor }) => 
           <Typography variant="body2" sx={{ mb: 1, opacity: 0.7 }}>
             Questions: {subject.questions}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
             <Chip 
               icon={<CorrectIcon />}
               label={`${subject.correct} correct`}

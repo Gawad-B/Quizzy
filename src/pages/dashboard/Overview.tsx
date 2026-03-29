@@ -29,9 +29,11 @@ import { useTheme } from '../../context/ThemeContext';
 import StatCard from '../../components/ui/StatCard';
 import SubjectCard from '../../components/layout/SubjectCard';
 import { useOverviewQuery } from '../../hooks/useOverviewQuery';
+import { useNavigate } from 'react-router-dom';
 
 const Overview = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const { data: studentStats, isLoading, error } = useOverviewQuery();
 
   if (isLoading) {
@@ -78,19 +80,21 @@ const Overview = () => {
   };
 
   return (
-    <Box className="dashboard-page" sx={{ p: 3 }}>
+    <Box className="dashboard-page" sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 3, md: 4 } }}>
         <Typography variant="h3" component="h1" sx={{ 
           fontWeight: 700, 
           color: theme.palette.text.primary,
-          mb: 1
+          mb: 1,
+          fontSize: { xs: '1.8rem', sm: '2.15rem', md: '2.8rem' }
         }}>
           Performance Overview 📊
         </Typography>
         <Typography variant="h6" sx={{ 
           color: theme.palette.text.secondary,
-          fontWeight: 400
+          fontWeight: 400,
+          fontSize: { xs: '0.98rem', sm: '1.05rem', md: '1.2rem' }
         }}>
           Track your learning progress and quiz performance
         </Typography>
@@ -100,8 +104,8 @@ const Overview = () => {
       <Box sx={{ 
         display: 'grid', 
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-        gap: 3, 
-        mb: 4 
+        gap: { xs: 1.5, sm: 2, md: 3 }, 
+        mb: { xs: 3, md: 4 } 
       }}>
         <StatCard
           value={studentStats.totalQuizzes}
@@ -148,10 +152,10 @@ const Overview = () => {
       <Box sx={{ 
         display: 'grid', 
         gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-        gap: 3, 
-        mb: 4 
+        gap: { xs: 2, md: 3 }, 
+        mb: { xs: 3, md: 4 } 
       }}>
-        <Paper elevation={2} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, height: '100%' }}>
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
             Answer Distribution
           </Typography>
@@ -249,14 +253,14 @@ const Overview = () => {
           </Box>
         </Paper>
 
-        <Paper elevation={2} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, height: '100%' }}>
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
             Performance Insights
           </Typography>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                 <SpeedIcon sx={{ color: theme.palette.info.main }} />
                 <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
                   Avg. Time per Question
@@ -269,8 +273,8 @@ const Overview = () => {
 
             <Divider />
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                 <TrophyIcon sx={{ color: theme.palette.warning.main }} />
                 <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
                   Best Streak
@@ -283,8 +287,8 @@ const Overview = () => {
 
             <Divider />
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                 <TrendingIcon sx={{ color: theme.palette.success.main }} />
                 <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
                   Improvement Trend
@@ -321,7 +325,7 @@ const Overview = () => {
       </Box>
 
       {/* Subject Performance */}
-      <Paper elevation={2} sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+      <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, mb: { xs: 3, md: 4 } }}>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
           Subject Performance Breakdown
         </Typography>
@@ -329,7 +333,7 @@ const Overview = () => {
         <Box sx={{ 
           display: 'grid', 
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-          gap: 2 
+          gap: { xs: 1.5, sm: 2 } 
         }}>
           {studentStats.subjects.map((subject, index) => (
             <SubjectCard 
@@ -342,7 +346,7 @@ const Overview = () => {
       </Paper>
 
       {/* Recent Quiz Performance */}
-      <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
           Recent Quiz Performance
         </Typography>
@@ -357,6 +361,8 @@ const Overview = () => {
                 bgcolor: theme.palette.background.paper,
                 borderRadius: 2,
                 mb: 1,
+                px: { xs: 1.25, sm: 2 },
+                py: { xs: 1.25, sm: 1.5 },
                 '&:hover': {
                   bgcolor: theme.palette.action.hover
                 }
@@ -372,7 +378,13 @@ const Overview = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: { xs: 'flex-start', sm: 'center' }, 
+                      justifyContent: 'space-between',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: { xs: 1, sm: 0 }
+                    }}>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                         {quiz.name}
                       </Typography>
@@ -387,7 +399,7 @@ const Overview = () => {
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mt: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 3 }, mt: 1, flexWrap: 'wrap' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <DateIcon sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
                         <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -419,9 +431,10 @@ const Overview = () => {
           <Button 
             variant="outlined" 
             color="primary"
+            onClick={() => navigate('/history')}
             sx={{ 
               borderRadius: 2,
-              px: 4,
+              px: { xs: 2.5, sm: 4 },
               py: 1.5
             }}
           >

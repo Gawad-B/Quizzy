@@ -31,26 +31,28 @@ const Analysis = () => {
   };
 
   return (
-    <Box className="dashboard-page" sx={{ p: 3 }}>
+    <Box className="dashboard-page" sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 3, md: 4 } }}>
         <Typography variant="h3" component="h1" sx={{ 
           fontWeight: 700, 
           color: theme.palette.text.primary,
-          mb: 1
+          mb: 1,
+          fontSize: { xs: '1.8rem', sm: '2.15rem', md: '2.8rem' }
         }}>
           Detailed Analytics 📊
         </Typography>
         <Typography variant="h6" sx={{ 
           color: theme.palette.text.secondary,
-          fontWeight: 400
+          fontWeight: 400,
+          fontSize: { xs: '0.98rem', sm: '1.05rem', md: '1.2rem' }
         }}>
           Deep dive into your performance by subject and chapter
         </Typography>
       </Box>
 
       {/* Subject Selection */}
-      <Paper elevation={2} sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+      <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, mb: { xs: 3, md: 4 } }}>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
           Select Subject
         </Typography>
@@ -69,7 +71,7 @@ const Analysis = () => {
       {selectedSubject && (
         <>
           {/* Chapter Analytics */}
-          <Paper elevation={2} sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+          <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, mb: { xs: 3, md: 4 } }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
               Chapter Performance Breakdown
             </Typography>
@@ -81,7 +83,7 @@ const Analysis = () => {
           </Paper>
 
           {/* Performance Charts */}
-          <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
+          <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
               Performance Trends & Insights
             </Typography>
@@ -104,7 +106,7 @@ const Analysis = () => {
 
       {/* No Subject Selected State */}
       {!selectedSubject && (
-        <Paper elevation={2} sx={{ p: 6, borderRadius: 3, textAlign: 'center' }}>
+        <Paper elevation={2} sx={{ p: { xs: 3, sm: 4, md: 6 }, borderRadius: 3, textAlign: 'center' }}>
           <Typography variant="h6" sx={{ 
             color: theme.palette.text.secondary,
             mb: 2

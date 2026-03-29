@@ -50,7 +50,15 @@ const History = () => {
 
   return (
     <Box className="dashboard-page" sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
-      <Typography variant="h3" sx={{ fontWeight: 700, mb: { xs: 2, md: 3 }, color: theme.palette.text.primary }}>
+      <Typography
+        variant="h3"
+        sx={{
+          fontWeight: 700,
+          mb: { xs: 2, md: 3 },
+          color: theme.palette.text.primary,
+          fontSize: { xs: '1.75rem', sm: '2.1rem', md: '2.8rem' },
+        }}
+      >
         Quiz History
       </Typography>
 
@@ -67,7 +75,7 @@ const History = () => {
             sx={{ minWidth: { xs: '100%', sm: 280 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}
           />
 
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' } }}>
             {(['All', 'Finished', 'Unfinished'] as const).map((tab) => (
               <Button
                 key={tab}
@@ -76,7 +84,7 @@ const History = () => {
                 size="small"
                 className="cool-filter-btn"
                 sx={{
-                  minWidth: 96,
+                  minWidth: { xs: 'calc(33.33% - 8px)', sm: 96 },
                   borderRadius: 2,
                   textTransform: 'none',
                   fontWeight: 600,
@@ -108,16 +116,16 @@ const History = () => {
           )}
 
           {currentQuizzes.map((quiz) => (
-            <Paper key={quiz.id} className="history-card" elevation={2} sx={{ p: 2, borderRadius: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Paper key={quiz.id} className="history-card" elevation={2} sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                 <Avatar
                   variant="rounded"
                   src={quiz.image ?? 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80&w=300&h=200'}
                   alt={quiz.title}
-                  sx={{ width: 72, height: 72 }}
+                  sx={{ width: { xs: '100%', sm: 72 }, height: { xs: 140, sm: 72 }, borderRadius: { xs: 2, sm: 1 } }}
                 />
 
-                <Box sx={{ flex: 1 }}>
+                <Box sx={{ flex: 1, width: '100%' }}>
                   <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     {quiz.title}
                   </Typography>
@@ -130,10 +138,10 @@ const History = () => {
                   <Chip
                     label={`${quiz.score}% (${quiz.totalQuestions} Q)`}
                     color={quiz.score >= 70 ? 'success' : 'warning'}
-                    sx={{ fontWeight: 600 }}
+                    sx={{ fontWeight: 600, alignSelf: { xs: 'flex-start', sm: 'center' } }}
                   />
                 ) : (
-                  <Chip label="Unfinished" color="default" sx={{ fontWeight: 600 }} />
+                  <Chip label="Unfinished" color="default" sx={{ fontWeight: 600, alignSelf: { xs: 'flex-start', sm: 'center' } }} />
                 )}
               </Box>
             </Paper>

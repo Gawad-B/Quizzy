@@ -47,30 +47,34 @@ const Home = () => {
   }
 
   return (
-    <Box className="dashboard-page" sx={{ p: 3 }}>
+    <Box className="dashboard-page" sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
       {/* Welcome Header with User Info */}
       <Box sx={{
-        mb: 4,
+        mb: { xs: 3, md: 4 },
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'flex-start'
+        alignItems: { xs: 'stretch', md: 'flex-start' },
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: { xs: 2, md: 0 }
       }}>
         <Box>
           <Typography variant="h3" component="h1" sx={{
             fontWeight: 700,
             color: theme.palette.text.primary,
-            mb: 1
+            mb: 1,
+            fontSize: { xs: '1.75rem', sm: '2.1rem', md: '2.8rem' }
           }}>
             Welcome back, {user?.first_name || 'User'}! 👋
           </Typography>
           <Typography variant="h6" sx={{
             color: theme.palette.text.secondary,
-            fontWeight: 400
+            fontWeight: 400,
+            fontSize: { xs: '0.98rem', sm: '1.05rem', md: '1.2rem' }
           }}>
             Ready to create some amazing quizzes today?
           </Typography>
           {user && (
-            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               <Avatar
                 sx={{
                   bgcolor: theme.palette.primary.main,
@@ -91,16 +95,18 @@ const Home = () => {
             </Box>
           )}
         </Box>
-        <ThemeToggle size="large" color="primary" showMenu={true} />
+        <Box sx={{ alignSelf: { xs: 'flex-start', md: 'auto' } }}>
+          <ThemeToggle size="large" color="primary" showMenu={true} />
+        </Box>
       </Box>
 
       {/* User Info Card */}
       {user && (
-        <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, mb: { xs: 3, md: 4 }, borderRadius: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
             Your Profile
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
             <Avatar
               sx={{
                 bgcolor: theme.palette.primary.main,
@@ -125,7 +131,7 @@ const Home = () => {
               label="Active"
               color="success"
               size="small"
-              sx={{ fontWeight: 600 }}
+              sx={{ fontWeight: 600, alignSelf: { xs: 'flex-start', sm: 'center' } }}
             />
           </Box>
         </Paper>
@@ -135,8 +141,8 @@ const Home = () => {
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-        gap: 3,
-        mb: 4
+        gap: { xs: 1.5, sm: 2, md: 3 },
+        mb: { xs: 3, md: 4 }
       }}>
         <StatCard
           value={totalQuizzes}
@@ -183,9 +189,9 @@ const Home = () => {
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-        gap: 3
+        gap: { xs: 2, md: 3 }
       }}>
-        <Paper elevation={2} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, height: '100%' }}>
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
             Quick Actions
           </Typography>
@@ -208,7 +214,7 @@ const Home = () => {
           </Box>
         </Paper>
 
-        <Paper elevation={2} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, height: '100%' }}>
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
             Recent Activity
           </Typography>
@@ -220,7 +226,7 @@ const Home = () => {
             )}
 
             {recentQuizzes.slice(0, 2).map((quiz, index) => (
-              <Box key={`${quiz.name}-${index}`} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 2 }}>
+              <Box key={`${quiz.name}-${index}`} sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                 <QuizIcon sx={{ color: theme.palette.primary.main }} />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
@@ -233,7 +239,7 @@ const Home = () => {
                 <Chip
                   label={quiz.status === 'Finished' ? `${quiz.score}%` : 'Unfinished'}
                   size="small"
-                  sx={{ bgcolor: quiz.status === 'Finished' ? theme.palette.success.main : theme.palette.warning.main, color: 'white' }}
+                  sx={{ bgcolor: quiz.status === 'Finished' ? theme.palette.success.main : theme.palette.warning.main, color: 'white', alignSelf: { xs: 'flex-start', sm: 'center' } }}
                 />
               </Box>
             ))}
