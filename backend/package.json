@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "build": "node --check index.js && node --check src/server.js && node --check src/app.js",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "dev:3001": "PORT=3001 nodemon index.js"
