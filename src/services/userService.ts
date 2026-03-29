@@ -61,6 +61,33 @@ export interface QuizHistoryItem extends Omit<Quiz, 'subject' | 'image'> {
   image?: string | null;
 }
 
+export interface CreateQuizPayload {
+  title: string;
+  subject: string;
+  totalQuestions: number;
+  status?: 'Finished' | 'Unfinished';
+  score?: number;
+  date?: string;
+}
+
+export interface UpdateQuizPayload {
+  status?: 'Finished' | 'Unfinished';
+  score?: number;
+}
+
+export interface QuizMutationResponse {
+  success: boolean;
+  quiz?: {
+    id: string;
+    title: string;
+    score: number;
+    totalQuestions: number;
+    status: 'Finished' | 'Unfinished';
+    date: string;
+  };
+  message?: string;
+}
+
 export const userAPI = {
   getById: async (): Promise<User> => {
     const resp = await http<{ success: boolean; user?: User }>('/api/auth/me');
@@ -84,5 +111,19 @@ export const userAPI = {
 
   getAnalysisBySubject: async (subjectId: string, userId: string = 'me'): Promise<AnalysisResponse> => {
     return http<AnalysisResponse>(`/api/users/${userId}/analysis/${subjectId}`);
+  },
+
+  createQuiz: async (payload: CreateQuizPayload, userId: string = 'me'): Promise<QuizMutationResponse> => {
+    return http<QuizMutationResponse>(`/api/users/${userId}/quizzes`, {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateQuiz: async (quizId: string, payload: UpdateQuizPayload, userId: string = 'me'): Promise<QuizMutationResponse> => {
+    return http<QuizMutationResponse>(`/api/users/${userId}/quizzes/${quizId}`, {
+      method: 'PATCH',
+      body: payload,
+    });
   },
 };

@@ -4,11 +4,14 @@ import { Box, Typography, Paper, Button, RadioGroup, FormControlLabel, Radio, Fo
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
 import { useTheme } from '../../context/ThemeContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { userAPI } from '../../services/userService';
 
 const Quiz = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const queryClient = useQueryClient();
   
   // Sample quiz data - in real app this would come from API
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -16,6 +19,7 @@ const Quiz = () => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [notes, setNotes] = useState<{ [key: number]: string }>({});
   const [showFeedback, setShowFeedback] = useState<{ [key: number]: boolean }>({});
+  const [isSavingResult, setIsSavingResult] = useState(false);
   
   const sampleQuestions = [
     {
@@ -105,8 +109,32 @@ const Quiz = () => {
     }));
   };
 
-  const handleFinishQuiz = () => {
-    setQuizCompleted(true);
+  const handleFinishQuiz = async () => {
+    setIsSavingResult(true);
+
+    const correctAnswersCount = Object.values(selectedAnswers).filter((answer, index) =>
+      answer === sampleQuestions[index].correctAnswer
+    ).length;
+    const calculatedScore = Math.round((correctAnswersCount / sampleQuestions.length) * 100);
+
+    try {
+      if (quizId) {
+        await userAPI.updateQuiz(quizId, {
+          status: 'Finished',
+          score: calculatedScore,
+        });
+
+        await queryClient.invalidateQueries({ queryKey: ['quizzes', 'me'] });
+        await queryClient.invalidateQueries({ queryKey: ['overview', 'me'] });
+        await queryClient.invalidateQueries({ queryKey: ['subjects', 'me'] });
+        await queryClient.invalidateQueries({ queryKey: ['analysis', 'me'] });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setQuizCompleted(true);
+      setIsSavingResult(false);
+    }
   };
 
   const handleNoteChange = (note: string) => {
@@ -342,7 +370,7 @@ const Quiz = () => {
                 <Button
                   variant="contained"
                   onClick={handleFinishQuiz}
-                  disabled={answeredQuestions < sampleQuestions.length}
+                  disabled={answeredQuestions < sampleQuestions.length || isSavingResult}
                   sx={{ 
                     px: 4, 
                     py: 1.5, 
@@ -354,7 +382,7 @@ const Quiz = () => {
                   }}
                   startIcon={<CheckIcon />}
                 >
-                  Finish Quiz
+                  {isSavingResult ? 'Saving Result...' : 'Finish Quiz'}
                 </Button>
               )}
             </Box>

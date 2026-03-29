@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Box, Typography, Paper, Stepper, Step, StepLabel, Button } from '@mui/material';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import QuizSettings from '../../components/quiz/QuizSettings';
 import ExamModeSelector from '../../components/quiz/ExamModeSelector';
 import QuizDetails from '../../components/quiz/QuizDetails';
 import QuizPreview from '../../components/quiz/QuizPreview';
+import { userAPI } from '../../services/userService';
 
 interface QuizData {
   settings: {
@@ -24,6 +26,7 @@ interface QuizData {
 const CreateQuiz = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeStep, setActiveStep] = useState(0);
   const [quizData, setQuizData] = useState<QuizData>({
     settings: {
@@ -66,22 +69,35 @@ const CreateQuiz = () => {
     setQuizData(prev => ({ ...prev, details }));
   };
 
-  const handleGenerateQuiz = () => {
-    // Generate a random quiz ID
-    const generateQuizId = () => {
-      const timestamp = Date.now().toString(36);
-      const randomStr = Math.random().toString(36).substring(2, 8);
-      return `quiz_${timestamp}_${randomStr}`;
-    };
+  const handleGenerateQuiz = async () => {
+    try {
+      const response = await userAPI.createQuiz({
+        title: quizData.details.quizName,
+        subject: quizData.details.subject,
+        totalQuestions: quizData.details.questionCount,
+        status: 'Unfinished',
+        score: 0,
+      });
 
-    const quizId = generateQuizId();
-    
-    // In real app, this would call API to generate quiz
-    console.log('Generating quiz with:', quizData);
-    console.log('Generated Quiz ID:', quizId);
-    
-    // Navigate to the quiz page
-    navigate(`/quiz/${quizId}`);
+      if (!response.success || !response.quiz?.id) {
+        throw new Error(response.message || 'Failed to create quiz.');
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['quizzes', 'me'] });
+      await queryClient.invalidateQueries({ queryKey: ['overview', 'me'] });
+      await queryClient.invalidateQueries({ queryKey: ['subjects', 'me'] });
+
+      navigate(`/quiz/${response.quiz.id}`, {
+        state: {
+          totalQuestions: quizData.details.questionCount,
+          subject: quizData.details.subject,
+          quizName: quizData.details.quizName,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      window.alert('Unable to create quiz right now. Please try again.');
+    }
   };
 
   const renderStepContent = (step: number) => {
