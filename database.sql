@@ -59,6 +59,8 @@ CREATE TABLE IF NOT EXISTS questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question_bank_id UUID NOT NULL REFERENCES question_banks(id) ON DELETE CASCADE,
     chapter_id UUID,
+    category VARCHAR(100),
+    subcategory VARCHAR(100),
     question_text TEXT NOT NULL,
     question_type VARCHAR(30) NOT NULL CHECK (question_type IN ('single_choice', 'multiple_choice', 'true_false', 'short_answer')),
     difficulty VARCHAR(20) NOT NULL DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard')),
@@ -103,6 +105,15 @@ CREATE TABLE IF NOT EXISTS user_question_attempts (
     UNIQUE(user_id, quiz_id, question_id)
 );
 
+-- 9.5. User-level bookmarks for important questions
+CREATE TABLE IF NOT EXISTS question_bookmarks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, question_id)
+);
+
 -- 9. Chapters table
 CREATE TABLE IF NOT EXISTS chapters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -136,16 +147,22 @@ CREATE INDEX IF NOT EXISTS idx_quizzes_subject_id ON quizzes(subject_id);
 CREATE INDEX IF NOT EXISTS idx_question_banks_subject_id ON question_banks(subject_id);
 CREATE INDEX IF NOT EXISTS idx_questions_question_bank_id ON questions(question_bank_id);
 CREATE INDEX IF NOT EXISTS idx_questions_chapter_id ON questions(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_questions_category_subcategory ON questions(category, subcategory);
 CREATE INDEX IF NOT EXISTS idx_question_options_question_id ON question_options(question_id);
 CREATE INDEX IF NOT EXISTS idx_quiz_questions_quiz_id ON quiz_questions(quiz_id);
 CREATE INDEX IF NOT EXISTS idx_quiz_questions_question_id ON quiz_questions(question_id);
 CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_quiz ON user_question_attempts(user_id, quiz_id);
 CREATE INDEX IF NOT EXISTS idx_user_question_attempts_question_id ON user_question_attempts(question_id);
+CREATE INDEX IF NOT EXISTS idx_question_bookmarks_user ON question_bookmarks(user_id);
+CREATE INDEX IF NOT EXISTS idx_question_bookmarks_question ON question_bookmarks(question_id);
 
 -- Note: You should encrypt the password in standard apps using bcrypt before inserting into password_hash.
 -- Insert Sample Subjects
 INSERT INTO subjects (name, image_url) VALUES 
 ('Mathematics', 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=300&h=200'),
+('Science', 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=300&h=200'),
+('Literature', 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=300&h=200'),
+('Geography', 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=300&h=200'),
 ('Chemistry', 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?auto=format&fit=crop&q=80&w=300&h=200'),
 ('History', 'https://images.unsplash.com/photo-1447069387593-a5de0862481e?auto=format&fit=crop&q=80&w=300&h=200'),
 ('Physics', 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&q=80&w=300&h=200'),

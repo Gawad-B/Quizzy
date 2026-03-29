@@ -17,7 +17,8 @@ interface QuizData {
   examMode: 'solved' | 'new' | 'bookmarked' | 'all';
   details: {
     subject: string;
-    chapters: string[];
+    category: string;
+    subcategory: string;
     quizName: string;
     questionCount: number;
   };
@@ -36,7 +37,8 @@ const CreateQuiz = () => {
     examMode: 'all',
     details: {
       subject: '',
-      chapters: [],
+      category: '',
+      subcategory: '',
       quizName: '',
       questionCount: 10
     }
@@ -75,6 +77,9 @@ const CreateQuiz = () => {
         title: quizData.details.quizName,
         subject: quizData.details.subject,
         totalQuestions: quizData.details.questionCount,
+        examMode: quizData.examMode,
+        category: quizData.details.category,
+        subcategory: quizData.details.subcategory,
         status: 'Unfinished',
         score: 0,
       });
@@ -91,6 +96,8 @@ const CreateQuiz = () => {
         state: {
           totalQuestions: quizData.details.questionCount,
           subject: quizData.details.subject,
+          category: quizData.details.category,
+          subcategory: quizData.details.subcategory,
           quizName: quizData.details.quizName,
         },
       });
@@ -142,8 +149,9 @@ const CreateQuiz = () => {
       case 1:
         return quizData.examMode !== undefined;
       case 2:
-        return Boolean(quizData.details.subject) && 
-               quizData.details.chapters.length > 0 && 
+         return Boolean(quizData.details.subject) && 
+           Boolean(quizData.details.category) &&
+           Boolean(quizData.details.subcategory) &&
                Boolean(quizData.details.quizName) && 
                quizData.details.questionCount > 0;
       case 3:

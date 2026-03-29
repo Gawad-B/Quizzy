@@ -9,6 +9,7 @@ const AuthAction = lazy(() => import('../pages/auth/AuthAction'))
 const History = lazy(() => import('../pages/dashboard/History'))
 const Overview = lazy(() => import('../pages/dashboard/Overview'))
 const Analysis = lazy(() => import('../pages/dashboard/Analysis'))
+const Bookmarks = lazy(() => import('../pages/dashboard/Bookmarks'))
 const CreateQuiz = lazy(() => import('../pages/dashboard/CreateQuiz'))
 const Quiz = lazy(() => import('../pages/quiz/Quiz'))
 const DashboardLayout = lazy(() => import('../components/layout/DashboardLayout'))
@@ -54,6 +55,13 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <DashboardLayout>
               <History />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/bookmarks' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Bookmarks />
             </DashboardLayout>
           </ProtectedRoute>
         } />

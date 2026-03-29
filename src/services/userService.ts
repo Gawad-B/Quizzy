@@ -65,6 +65,9 @@ export interface CreateQuizPayload {
   title: string;
   subject: string;
   totalQuestions: number;
+  examMode?: 'solved' | 'new' | 'bookmarked' | 'all';
+  category?: string;
+  subcategory?: string;
   status?: 'Finished' | 'Unfinished';
   score?: number;
   date?: string;
@@ -86,6 +89,37 @@ export interface QuizMutationResponse {
     date: string;
   };
   message?: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  choices: string[];
+  correctAnswer: string | null;
+  explanation?: string | null;
+  category?: string | null;
+  subcategory?: string | null;
+  subject?: string | null;
+  isBookmarked: boolean;
+}
+
+export interface QuizQuestionsResponse {
+  success: boolean;
+  questions: QuizQuestion[];
+}
+
+export interface BookmarkResponse {
+  success: boolean;
+  bookmarked?: boolean;
+  bookmarks?: Array<{
+    id: string;
+    question: string;
+    explanation?: string | null;
+    category?: string | null;
+    subcategory?: string | null;
+    subject?: string | null;
+    bookmarked_at?: string;
+  }>;
 }
 
 export const userAPI = {
@@ -125,5 +159,44 @@ export const userAPI = {
       method: 'PATCH',
       body: payload,
     });
+  },
+
+  getQuizQuestions: async (quizId: string, userId: string = 'me'): Promise<QuizQuestionsResponse> => {
+    return http<QuizQuestionsResponse>(`/api/users/${userId}/quizzes/${quizId}/questions`);
+  },
+
+  setQuestionBookmark: async (
+    questionId: string,
+    bookmarked: boolean,
+    userId: string = 'me'
+  ): Promise<BookmarkResponse> => {
+    return http<BookmarkResponse>(`/api/users/${userId}/questions/${questionId}/bookmark`, {
+      method: 'POST',
+      body: { bookmarked },
+    });
+  },
+
+  getBookmarkedQuestions: async (
+    filters: { subject?: string; category?: string; subcategory?: string } = {},
+    userId: string = 'me'
+  ): Promise<BookmarkResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters.subject) {
+      params.set('subject', filters.subject);
+    }
+    if (filters.category) {
+      params.set('category', filters.category);
+    }
+    if (filters.subcategory) {
+      params.set('subcategory', filters.subcategory);
+    }
+
+    const queryString = params.toString();
+    const path = queryString
+      ? `/api/users/${userId}/bookmarks?${queryString}`
+      : `/api/users/${userId}/bookmarks`;
+
+    return http<BookmarkResponse>(path);
   },
 };

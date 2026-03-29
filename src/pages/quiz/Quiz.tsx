@@ -1,8 +1,8 @@
 
-import { useState } from 'react';
-import { Box, Typography, Paper, Button, RadioGroup, FormControlLabel, Radio, FormControl, Chip, LinearProgress, TextField, Alert, Collapse } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Box, Typography, Paper, Button, RadioGroup, FormControlLabel, Radio, FormControl, Chip, LinearProgress, TextField, Alert, Collapse, CircularProgress } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, CollectionsBookmark as CollectionsBookmarkIcon } from '@mui/icons-material';
 import { useTheme } from '../../context/ThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { userAPI } from '../../services/userService';
@@ -12,110 +12,96 @@ const Quiz = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const queryClient = useQueryClient();
-  
-  // Sample quiz data - in real app this would come from API
+
+  const [questions, setQuestions] = useState<Array<{
+    id: string;
+    question: string;
+    choices: string[];
+    correctAnswer: string | null;
+    explanation?: string | null;
+    category?: string | null;
+    subcategory?: string | null;
+    isBookmarked: boolean;
+  }>>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [notes, setNotes] = useState<{ [key: number]: string }>({});
-  const [showFeedback, setShowFeedback] = useState<{ [key: number]: boolean }>({});
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [showFeedback, setShowFeedback] = useState<Record<string, boolean>>({});
   const [isSavingResult, setIsSavingResult] = useState(false);
-  
-  const sampleQuestions = [
-    {
-      id: 1,
-      question: "What is the formula for calculating the area of a circle?",
-      choices: [
-        "A = πr²",
-        "A = 2πr",
-        "A = πd",
-        "A = 2πd²"
-      ],
-      correctAnswer: "A = πr²",
-      explanation: "The area of a circle is calculated using the formula A = πr², where r is the radius."
-    },
-    {
-      id: 2,
-      question: "Which of the following is a quadratic equation?",
-      choices: [
-        "2x + 3 = 7",
-        "x² + 5x + 6 = 0",
-        "3x - 2 = 10",
-        "4x + 1 = 9"
-      ],
-      correctAnswer: "x² + 5x + 6 = 0",
-      explanation: "A quadratic equation has the form ax² + bx + c = 0, where a ≠ 0."
-    },
-    {
-      id: 3,
-      question: "What is the value of sin(90°)?",
-      choices: [
-        "0",
-        "1",
-        "-1",
-        "Undefined"
-      ],
-      correctAnswer: "1",
-      explanation: "The sine of 90 degrees equals 1, as it represents the maximum value of the sine function."
-    },
-    {
-      id: 4,
-      question: "In a right triangle, if one angle is 30°, what is the other acute angle?",
-      choices: [
-        "45°",
-        "60°",
-        "90°",
-        "120°"
-      ],
-      correctAnswer: "60°",
-      explanation: "In a right triangle, the sum of the two acute angles is 90°. So if one is 30°, the other is 60°."
-    },
-    {
-      id: 5,
-      question: "What is the derivative of x³?",
-      choices: [
-        "x²",
-        "2x²",
-        "3x²",
-        "3x"
-      ],
-      correctAnswer: "3x²",
-      explanation: "The derivative of x³ is 3x², using the power rule: d/dx(xⁿ) = nxⁿ⁻¹."
-    }
-  ];
+
+  useEffect(() => {
+    const loadQuizQuestions = async () => {
+      if (!quizId) {
+        setLoadError('Quiz ID is missing.');
+        setIsLoadingQuestions(false);
+        return;
+      }
+
+      setIsLoadingQuestions(true);
+      setLoadError(null);
+
+      try {
+        const response = await userAPI.getQuizQuestions(quizId);
+        setQuestions(response.questions || []);
+      } catch (error) {
+        console.error(error);
+        setLoadError('Failed to load quiz questions. Please try again.');
+      } finally {
+        setIsLoadingQuestions(false);
+      }
+    };
+
+    void loadQuizQuestions();
+  }, [quizId]);
 
   const handleBackToDashboard = () => {
     navigate('/create-quiz');
   };
 
   const handleAnswerSelect = (answer: string) => {
+    const questionId = questions[currentQuestionIndex]?.id;
+    if (!questionId) {
+      return;
+    }
+
     setSelectedAnswers(prev => ({
       ...prev,
-      [currentQuestionIndex]: answer
+      [questionId]: answer
     }));
-    // Show feedback immediately when answer is selected
+
     setShowFeedback(prev => ({
       ...prev,
-      [currentQuestionIndex]: true
+      [questionId]: true
     }));
   };
 
   const handleQuestionNavigation = (newIndex: number) => {
     setCurrentQuestionIndex(newIndex);
-    // Hide feedback when navigating to a new question
+    const questionId = questions[newIndex]?.id;
+    if (!questionId) {
+      return;
+    }
+
     setShowFeedback(prev => ({
       ...prev,
-      [newIndex]: false
+      [questionId]: false
     }));
   };
 
   const handleFinishQuiz = async () => {
     setIsSavingResult(true);
 
-    const correctAnswersCount = Object.values(selectedAnswers).filter((answer, index) =>
-      answer === sampleQuestions[index].correctAnswer
-    ).length;
-    const calculatedScore = Math.round((correctAnswersCount / sampleQuestions.length) * 100);
+    const correctAnswersCount = questions.filter((question) => {
+      const selectedAnswer = selectedAnswers[question.id];
+      return selectedAnswer && selectedAnswer === question.correctAnswer;
+    }).length;
+    const calculatedScore = questions.length > 0
+      ? Math.round((correctAnswersCount / questions.length) * 100)
+      : 0;
 
     try {
       if (quizId) {
@@ -138,15 +124,65 @@ const Quiz = () => {
   };
 
   const handleNoteChange = (note: string) => {
+    const questionId = questions[currentQuestionIndex]?.id;
+    if (!questionId) {
+      return;
+    }
+
     setNotes(prev => ({
       ...prev,
-      [currentQuestionIndex]: note
+      [questionId]: note
     }));
   };
 
-  const currentQuestion = sampleQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / sampleQuestions.length) * 100;
+  const toggleBookmark = async () => {
+    const question = questions[currentQuestionIndex];
+    if (!question) {
+      return;
+    }
+
+    const nextBookmarkedState = !question.isBookmarked;
+
+    try {
+      await userAPI.setQuestionBookmark(question.id, nextBookmarkedState);
+      setQuestions((prev) => prev.map((item) => (
+        item.id === question.id
+          ? { ...item, isBookmarked: nextBookmarkedState }
+          : item
+      )));
+    } catch (error) {
+      console.error(error);
+      window.alert('Unable to update bookmark right now.');
+    }
+  };
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = questions.length > 0
+    ? ((currentQuestionIndex + 1) / questions.length) * 100
+    : 0;
   const answeredQuestions = Object.keys(selectedAnswers).length;
+
+  if (isLoadingQuestions) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
+        <CircularProgress />
+        <Typography variant="h6">Loading quiz questions...</Typography>
+      </Box>
+    );
+  }
+
+  if (loadError || questions.length === 0) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError || 'No questions were found for this quiz.'}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/create-quiz')}>
+          Back to Create Quiz
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ 
@@ -174,6 +210,14 @@ const Quiz = () => {
           >
             Back to Dashboard
           </Button>
+          <Button
+            variant="outlined"
+            startIcon={<CollectionsBookmarkIcon />}
+            onClick={() => navigate('/bookmarks')}
+            sx={{ borderRadius: 2 }}
+          >
+            View Bookmarks
+          </Button>
         </Box>
         
         <Typography variant="h6" sx={{ 
@@ -192,11 +236,11 @@ const Quiz = () => {
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Question {currentQuestionIndex + 1} of {sampleQuestions.length}
+            Question {currentQuestionIndex + 1} of {questions.length}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Chip 
-              label={`${answeredQuestions}/${sampleQuestions.length} answered`}
+              label={`${answeredQuestions}/${questions.length} answered`}
               color="primary"
               variant="outlined"
             />
@@ -237,9 +281,26 @@ const Quiz = () => {
           {currentQuestion.question}
         </Typography>
 
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          {currentQuestion.category && (
+            <Chip size="small" label={`Category: ${currentQuestion.category}`} color="info" variant="outlined" />
+          )}
+          {currentQuestion.subcategory && (
+            <Chip size="small" label={`Subcategory: ${currentQuestion.subcategory}`} color="secondary" variant="outlined" />
+          )}
+          <Button
+            size="small"
+            variant="text"
+            startIcon={currentQuestion.isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+            onClick={toggleBookmark}
+          >
+            {currentQuestion.isBookmarked ? 'Bookmarked' : 'Bookmark'}
+          </Button>
+        </Box>
+
         <FormControl component="fieldset" sx={{ width: '100%' }}>
           <RadioGroup
-            value={selectedAnswers[currentQuestionIndex] || ''}
+            value={selectedAnswers[currentQuestion.id] || ''}
             onChange={(e) => handleAnswerSelect(e.target.value)}
           >
             {currentQuestion.choices.map((choice, index) => (
@@ -262,7 +323,7 @@ const Quiz = () => {
                     ? theme.palette.primary.main 
                     : theme.palette.divider}`,
                   borderRadius: 2,
-                  backgroundColor: selectedAnswers[currentQuestionIndex] === choice 
+                  backgroundColor: selectedAnswers[currentQuestion.id] === choice 
                     ? `${theme.palette.primary.main}10` 
                     : 'transparent',
                   transition: 'all 0.2s ease-in-out',
@@ -277,22 +338,22 @@ const Quiz = () => {
         </FormControl>
 
         {/* Answer Feedback */}
-        {showFeedback[currentQuestionIndex] && selectedAnswers[currentQuestionIndex] && (
-          <Collapse in={showFeedback[currentQuestionIndex]} timeout={300}>
+        {showFeedback[currentQuestion.id] && selectedAnswers[currentQuestion.id] && (
+          <Collapse in={showFeedback[currentQuestion.id]} timeout={300}>
             <Alert 
-              severity={selectedAnswers[currentQuestionIndex] === currentQuestion.correctAnswer ? 'success' : 'error'}
+              severity={selectedAnswers[currentQuestion.id] === currentQuestion.correctAnswer ? 'success' : 'error'}
               sx={{ mt: 3, mb: 3 }}
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
-                {selectedAnswers[currentQuestionIndex] === currentQuestion.correctAnswer 
+                {selectedAnswers[currentQuestion.id] === currentQuestion.correctAnswer 
                   ? '✅ Correct!' 
                   : '❌ Incorrect'
                 }
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                <strong>Your Answer:</strong> {selectedAnswers[currentQuestionIndex]}
+                <strong>Your Answer:</strong> {selectedAnswers[currentQuestion.id]}
               </Typography>
-              {selectedAnswers[currentQuestionIndex] !== currentQuestion.correctAnswer && (
+              {selectedAnswers[currentQuestion.id] !== currentQuestion.correctAnswer && (
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   <strong>Correct Answer:</strong> {currentQuestion.correctAnswer}
                 </Typography>
@@ -314,7 +375,7 @@ const Quiz = () => {
             multiline
             rows={3}
             placeholder="Write your notes, thoughts, or key points about this question..."
-            value={notes[currentQuestionIndex] || ''}
+            value={notes[currentQuestion.id] || ''}
             onChange={(e) => handleNoteChange(e.target.value)}
             variant="outlined"
             sx={{
@@ -325,7 +386,7 @@ const Quiz = () => {
               },
             }}
           />
-          {notes[currentQuestionIndex] && (
+          {notes[currentQuestion.id] && (
             <Typography variant="caption" sx={{ mt: 1, color: theme.palette.text.secondary }}>
               Note saved for this question
             </Typography>
@@ -357,11 +418,11 @@ const Quiz = () => {
             </Button>
 
             <Box sx={{ display: 'flex', gap: 2 }}>
-              {currentQuestionIndex < sampleQuestions.length - 1 ? (
+              {currentQuestionIndex < questions.length - 1 ? (
                 <Button
                   variant="contained"
                   onClick={() => handleQuestionNavigation(currentQuestionIndex + 1)}
-                  disabled={!selectedAnswers[currentQuestionIndex]}
+                  disabled={!selectedAnswers[currentQuestion.id]}
                   sx={{ px: 4, py: 1.5, borderRadius: 2 }}
                 >
                   Next Question
@@ -370,7 +431,7 @@ const Quiz = () => {
                 <Button
                   variant="contained"
                   onClick={handleFinishQuiz}
-                  disabled={answeredQuestions < sampleQuestions.length || isSavingResult}
+                  disabled={answeredQuestions < questions.length || isSavingResult}
                   sx={{ 
                     px: 4, 
                     py: 1.5, 
@@ -424,7 +485,7 @@ const Quiz = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
-                  {sampleQuestions.length}
+                  {questions.length}
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                   Total Questions
@@ -432,9 +493,7 @@ const Quiz = () => {
               </Box>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ color: theme.palette.success.main, fontWeight: 700 }}>
-                  {Object.values(selectedAnswers).filter((answer, index) => 
-                    answer === sampleQuestions[index].correctAnswer
-                  ).length}
+                  {questions.filter((question) => selectedAnswers[question.id] === question.correctAnswer).length}
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                   Correct Answers
@@ -442,9 +501,7 @@ const Quiz = () => {
               </Box>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ color: theme.palette.warning.main, fontWeight: 700 }}>
-                  {Math.round((Object.values(selectedAnswers).filter((answer, index) => 
-                    answer === sampleQuestions[index].correctAnswer
-                  ).length / sampleQuestions.length) * 100)}%
+                  {Math.round((questions.filter((question) => selectedAnswers[question.id] === question.correctAnswer).length / questions.length) * 100)}%
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                   Score
@@ -460,6 +517,7 @@ const Quiz = () => {
               setCurrentQuestionIndex(0);
               setSelectedAnswers({});
               setShowFeedback({});
+              setNotes({});
             }}
             sx={{ px: 4, py: 1.5, borderRadius: 2 }}
           >
@@ -473,10 +531,10 @@ const Quiz = () => {
                 📝 Your Notes Summary
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
-                {Object.entries(notes).map(([questionIndex, note]) => (
-                  <Box key={questionIndex} sx={{ mb: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
+                {Object.entries(notes).map(([questionId, note]) => (
+                  <Box key={questionId} sx={{ mb: 2, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      Question {parseInt(questionIndex) + 1}
+                      Question {questions.findIndex((question) => question.id === questionId) + 1}
                     </Typography>
                     <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                       {note}

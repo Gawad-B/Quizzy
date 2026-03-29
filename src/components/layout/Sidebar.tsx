@@ -17,6 +17,7 @@ import {
 import {
   Home as HomeIcon,
   History as HistoryIcon,
+  Bookmark as BookmarkIcon,
   Dashboard as OverviewIcon,
   Analytics as AnalyticsIcon,
   Quiz as CreateQuizIcon,
@@ -49,6 +50,7 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
     { text: 'Overview', icon: <OverviewIcon />, path: '/overview' },
     { text: 'Analysis', icon: <AnalyticsIcon />, path: '/analysis' },
     { text: 'Create Quiz', icon: <CreateQuizIcon />, path: '/create-quiz' },
+    { text: 'Bookmarks', icon: <BookmarkIcon />, path: '/bookmarks' },
     { text: 'History', icon: <HistoryIcon />, path: '/history' },
   ];
 

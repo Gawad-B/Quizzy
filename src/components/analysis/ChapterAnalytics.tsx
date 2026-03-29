@@ -35,7 +35,7 @@ const ChapterAnalytics: React.FC<ChapterAnalyticsProps> = ({ chapters = [] }) =>
       <Grid container spacing={3}>
         {chapters.length === 0 && (
           <Grid size={{ xs: 12 }}>
-            <Typography sx={{ opacity: 0.8 }}>No chapter analytics yet for this subject.</Typography>
+            <Typography sx={{ opacity: 0.8 }}>No category analytics yet for this subject.</Typography>
           </Grid>
         )}
         {chapters.map((chapter, index) => (

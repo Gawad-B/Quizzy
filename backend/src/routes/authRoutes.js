@@ -7,6 +7,7 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 const firebaseBaseUrl = 'https://identitytoolkit.googleapis.com/v1';
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const nationalityPhoneRules = {
   Egyptian: { code: '+20', localLength: 11 },
   Saudi: { code: '+966', localLength: 10 },
@@ -60,6 +61,14 @@ function mapFirebaseError(message = '') {
   }
 
   return message || 'Authentication failed. Please try again.';
+}
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isValidEmail(value) {
+  return emailRegex.test(normalizeEmail(value));
 }
 
 function normalizeGraduationYear(value) {
@@ -210,6 +219,10 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email is required.' });
     }
 
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+    }
+
     if (!String(university || '').trim()) {
       return res.status(400).json({ success: false, message: 'University is required.' });
     }
@@ -231,8 +244,10 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ success: false, message: passwordValidationMessage });
     }
 
+    const normalizedEmailInput = normalizeEmail(email);
+
     const signUpData = await postFirebase('accounts:signUp', {
-      email,
+      email: normalizedEmailInput,
       password,
       returnSecureToken: true,
     });
@@ -318,8 +333,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+    }
+
     const signInData = await postFirebase('accounts:signInWithPassword', {
-      email,
+      email: normalizeEmail(email),
       password,
       returnSecureToken: true,
     });
@@ -384,20 +403,28 @@ router.post('/password-reset/request', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email is required.' });
     }
 
-    await postFirebase('accounts:sendOobCode', {
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+    }
+
+    const resetResult = await postFirebaseSafe('accounts:sendOobCode', {
       requestType: 'PASSWORD_RESET',
-      email: String(email).trim().toLowerCase(),
+      email: normalizeEmail(email),
     });
+
+    if (!resetResult.ok) {
+      console.warn('Password reset request failed silently to avoid user enumeration.');
+    }
 
     return res.json({
       success: true,
-      message: 'Password reset email sent. Please check your inbox.',
+      message: 'If the email is registered, a password reset link has been sent.',
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({
-      success: false,
-      message: mapFirebaseError(error?.message),
+    return res.json({
+      success: true,
+      message: 'If the email is registered, a password reset link has been sent.',
     });
   }
 });
@@ -446,8 +473,12 @@ router.post('/email-verification/resend', async (req, res) => {
       });
     }
 
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+    }
+
     const signInData = await postFirebase('accounts:signInWithPassword', {
-      email,
+      email: normalizeEmail(email),
       password,
       returnSecureToken: true,
     });

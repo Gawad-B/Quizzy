@@ -45,7 +45,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId, perfor
         {/* Question Types */}
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Question Type Performance
+            Category Performance
           </Typography>
           {Object.entries(data.questionTypes).map(([type, score]) => (
             <Box key={type} sx={{ mb: 2 }}>

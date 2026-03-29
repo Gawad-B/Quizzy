@@ -15,6 +15,122 @@ const subjectKeyToName = {
   english: 'English',
 };
 
+const CANONICAL_SUBJECT_NAMES = ['Mathematics', 'Science', 'History', 'Literature', 'Geography'];
+
+const SUBJECT_BLUEPRINTS = {
+  Mathematics: {
+    categories: {
+      Algebra: ['Linear Equations', 'Quadratic Expressions', 'Polynomials'],
+      Geometry: ['Triangles', 'Circles', 'Coordinate Geometry'],
+      Calculus: ['Limits', 'Derivatives', 'Integrals'],
+    },
+  },
+  Science: {
+    categories: {
+      Physics: ['Motion and Forces', 'Energy', 'Waves and Optics'],
+      Chemistry: ['Atoms and Molecules', 'Chemical Reactions', 'Acids and Bases'],
+      Biology: ['Cell Structure', 'Genetics', 'Ecosystems'],
+    },
+  },
+  History: {
+    categories: {
+      Ancient: ['Mesopotamia', 'Egypt', 'Ancient Greece'],
+      Medieval: ['Feudalism', 'Crusades', 'Renaissance'],
+      Modern: ['Industrial Revolution', 'World Wars', 'Cold War'],
+    },
+  },
+  Literature: {
+    categories: {
+      Fiction: ['Narrative Voice', 'Plot Structure', 'Character Development'],
+      Poetry: ['Imagery', 'Meter and Rhythm', 'Figurative Language'],
+      Drama: ['Dialogue', 'Conflict', 'Stagecraft'],
+    },
+  },
+  Geography: {
+    categories: {
+      Physical: ['Landforms', 'Climate Systems', 'Natural Resources'],
+      Human: ['Population', 'Urbanization', 'Migration'],
+      Economic: ['Trade Networks', 'Development', 'Globalization'],
+    },
+  },
+  Chemistry: {
+    categories: {
+      Fundamentals: ['Atomic Structure', 'Periodic Table', 'Chemical Bonding'],
+      Reactions: ['Stoichiometry', 'Reaction Rates', 'Equilibrium'],
+      Applications: ['Organic Chemistry', 'Electrochemistry', 'Analytical Methods'],
+    },
+  },
+  Physics: {
+    categories: {
+      Mechanics: ['Kinematics', 'Dynamics', 'Momentum'],
+      Thermodynamics: ['Heat Transfer', 'Laws of Thermodynamics', 'Engines'],
+      Electromagnetism: ['Electric Fields', 'Circuits', 'Magnetism'],
+    },
+  },
+  English: {
+    categories: {
+      Grammar: ['Sentence Structure', 'Tenses', 'Punctuation'],
+      Reading: ['Main Idea', 'Inference', 'Context Clues'],
+      Writing: ['Essay Structure', 'Argumentation', 'Revision'],
+    },
+  },
+};
+
+const SUBJECT_FALLBACK_BLUEPRINT = {
+  categories: {
+    Foundations: ['Core Concepts', 'Key Terms', 'Applied Practice'],
+    Intermediate: ['Analysis', 'Interpretation', 'Problem Solving'],
+    Advanced: ['Synthesis', 'Evaluation', 'Real-world Scenarios'],
+  },
+};
+
+const QUESTION_STEMS = [
+  'Which statement best describes the main principle of {subcategory} in {subject}?',
+  'When studying {subcategory}, which approach is most accurate in {subject}?',
+  'Which option is the strongest example of applying {subcategory} in {subject}?',
+  'What is the most reliable way to reason through a {subcategory} problem in {subject}?',
+  'In {subject}, why is {subcategory} considered an important topic?',
+];
+
+const OPTION_BUILDERS = [
+  {
+    correctIndex: 0,
+    build: (subject, subcategory) => [
+      `It uses core ${subcategory} ideas to solve ${subject.toLowerCase()} problems step by step.`,
+      `It ignores evidence and depends only on memorization.`,
+      `It avoids concepts and focuses only on random guessing.`,
+      `It is unrelated to practical ${subject.toLowerCase()} contexts.`,
+    ],
+  },
+  {
+    correctIndex: 1,
+    build: (subject, subcategory) => [
+      `It removes context to make answers simpler but less accurate.`,
+      `It links definitions, reasoning, and examples in ${subcategory} to reach valid conclusions.`,
+      `It assumes every question has the same pattern regardless of topic.`,
+      `It avoids checking results because first attempts are always correct.`,
+    ],
+  },
+  {
+    correctIndex: 2,
+    build: (subject, subcategory) => [
+      `It treats ${subcategory} as isolated facts with no relationships.`,
+      `It replaces understanding with repeated keyword matching.`,
+      `It connects concepts in ${subcategory} with prior knowledge to justify answers clearly.`,
+      `It relies on speed only and ignores accuracy.`,
+    ],
+  },
+  {
+    correctIndex: 3,
+    build: (subject, subcategory) => [
+      `It discourages reviewing mistakes after practice sessions.`,
+      `It focuses on one example and applies it to every case.`,
+      `It avoids comparing options before selecting an answer.`,
+      `It evaluates evidence, eliminates weak choices, and confirms logic in ${subcategory}.`,
+    ],
+  },
+];
+
 function getTargetUserId(req) {
   return req.params.targetId === 'me' ? req.user.id : req.params.targetId;
 }
@@ -48,6 +164,233 @@ async function resolveSubjectId(subjectValue) {
   return created.rows[0].id;
 }
 
+function getSubjectBlueprint(subjectName) {
+  return SUBJECT_BLUEPRINTS[subjectName] || SUBJECT_FALLBACK_BLUEPRINT;
+}
+
+function getCategoryEntries(subjectName) {
+  const blueprint = getSubjectBlueprint(subjectName);
+  return Object.entries(blueprint.categories).flatMap(([category, subcategories]) =>
+    subcategories.map((subcategory) => ({ category, subcategory }))
+  );
+}
+
+function generateQuestionDrafts(subjectName, count = 50) {
+  const categoryEntries = getCategoryEntries(subjectName);
+  const drafts = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const categoryEntry = categoryEntries[i % categoryEntries.length];
+    const stem = QUESTION_STEMS[i % QUESTION_STEMS.length]
+      .replaceAll('{subject}', subjectName)
+      .replaceAll('{subcategory}', categoryEntry.subcategory);
+
+    const optionBuilder = OPTION_BUILDERS[i % OPTION_BUILDERS.length];
+    const optionTexts = optionBuilder.build(subjectName, categoryEntry.subcategory);
+    const correctAnswer = optionTexts[optionBuilder.correctIndex];
+
+    drafts.push({
+      questionText: `${stem} (${categoryEntry.category} #${i + 1})`,
+      questionType: 'single_choice',
+      difficulty: i % 3 === 0 ? 'easy' : i % 3 === 1 ? 'medium' : 'hard',
+      explanation: `This checks your understanding of ${categoryEntry.subcategory} in ${subjectName}.`,
+      points: 1,
+      category: categoryEntry.category,
+      subcategory: categoryEntry.subcategory,
+      options: optionTexts,
+      correctIndex: optionBuilder.correctIndex,
+      correctAnswer,
+    });
+  }
+
+  return drafts;
+}
+
+async function ensureQuestionInfrastructure() {
+  await pool.query(
+    `ALTER TABLE questions
+       ADD COLUMN IF NOT EXISTS category VARCHAR(100),
+       ADD COLUMN IF NOT EXISTS subcategory VARCHAR(100)`
+  );
+
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS question_bookmarks (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, question_id)
+    )`
+  );
+
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_question_bookmarks_user_id ON question_bookmarks(user_id)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_questions_subject_category ON questions(question_bank_id, category, subcategory)');
+}
+
+async function ensureQuestionPoolForSubject(subjectId, subjectName) {
+  const bankResult = await pool.query(
+    `INSERT INTO question_banks (subject_id, title, description)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (subject_id) DO UPDATE SET
+       title = EXCLUDED.title,
+       description = EXCLUDED.description,
+       updated_at = CURRENT_TIMESTAMP
+     RETURNING id`,
+    [subjectId, `${subjectName} Question Bank`, `Auto-generated bank for ${subjectName}`]
+  );
+
+  const bankId = bankResult.rows[0].id;
+  const questionCountResult = await pool.query(
+    'SELECT COUNT(*)::int AS count FROM questions WHERE question_bank_id = $1 AND is_active = TRUE',
+    [bankId]
+  );
+  const currentCount = Number(questionCountResult.rows[0]?.count || 0);
+
+  if (currentCount >= 50) {
+    return bankId;
+  }
+
+  const drafts = generateQuestionDrafts(subjectName, 50 - currentCount);
+  for (const draft of drafts) {
+    const questionResult = await pool.query(
+      `INSERT INTO questions (
+         question_bank_id,
+         question_text,
+         question_type,
+         difficulty,
+         explanation,
+         points,
+         category,
+         subcategory,
+         is_active
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE)
+       RETURNING id`,
+      [
+        bankId,
+        draft.questionText,
+        draft.questionType,
+        draft.difficulty,
+        draft.explanation,
+        draft.points,
+        draft.category,
+        draft.subcategory,
+      ]
+    );
+
+    const questionId = questionResult.rows[0].id;
+    const optionInserts = draft.options.map((optionText, index) =>
+      pool.query(
+        `INSERT INTO question_options (question_id, option_text, is_correct, option_order)
+         VALUES ($1, $2, $3, $4)`,
+        [questionId, optionText, index === draft.correctIndex, index + 1]
+      )
+    );
+    await Promise.all(optionInserts);
+  }
+
+  return bankId;
+}
+
+async function selectQuestionsForQuiz({
+  subjectId,
+  userId,
+  totalQuestions,
+  examMode,
+  category,
+  subcategory,
+}) {
+  let questionIds = [];
+
+  async function appendQuestions({
+    applyMode,
+    applyCategory,
+    applySubcategory,
+  }) {
+    const remaining = totalQuestions - questionIds.length;
+    if (remaining <= 0) {
+      return;
+    }
+
+    const values = [subjectId];
+    const filters = ['qb.subject_id = $1', 'q.is_active = TRUE'];
+    let userIdParamIndex = null;
+
+    if (applyCategory && category) {
+      values.push(category);
+      filters.push(`q.category = $${values.length}`);
+    }
+
+    if (applySubcategory && subcategory) {
+      values.push(subcategory);
+      filters.push(`q.subcategory = $${values.length}`);
+    }
+
+    if (applyMode) {
+      values.push(userId);
+      userIdParamIndex = values.length;
+
+      if (examMode === 'solved') {
+        filters.push(
+          `EXISTS (
+             SELECT 1
+             FROM user_question_attempts uqa
+             WHERE uqa.user_id = $${userIdParamIndex}::uuid AND uqa.question_id = q.id
+           )`
+        );
+      } else if (examMode === 'new') {
+        filters.push(
+          `NOT EXISTS (
+             SELECT 1
+             FROM user_question_attempts uqa
+             WHERE uqa.user_id = $${userIdParamIndex}::uuid AND uqa.question_id = q.id
+           )`
+        );
+      } else if (examMode === 'bookmarked') {
+        filters.push(
+          `EXISTS (
+             SELECT 1
+             FROM question_bookmarks qbkm
+             WHERE qbkm.user_id = $${userIdParamIndex}::uuid AND qbkm.question_id = q.id
+           )`
+        );
+      }
+    }
+
+    if (questionIds.length > 0) {
+      values.push(questionIds);
+      filters.push(`q.id <> ALL($${values.length}::uuid[])`);
+    }
+
+    values.push(remaining);
+    const result = await pool.query(
+      `SELECT q.id
+       FROM questions q
+       JOIN question_banks qb ON qb.id = q.question_bank_id
+       WHERE ${filters.join(' AND ')}
+       ORDER BY RANDOM()
+       LIMIT $${values.length}`,
+      values
+    );
+
+    questionIds = questionIds.concat(result.rows.map((row) => row.id));
+  }
+
+  // 1) Keep the exact requested filters.
+  await appendQuestions({ applyMode: true, applyCategory: true, applySubcategory: true });
+
+  // 2) Keep category/subcategory but relax mode.
+  await appendQuestions({ applyMode: false, applyCategory: true, applySubcategory: true });
+
+  // 3) Keep category only.
+  await appendQuestions({ applyMode: false, applyCategory: true, applySubcategory: false });
+
+  // 4) Fill from full subject pool.
+  await appendQuestions({ applyMode: false, applyCategory: false, applySubcategory: false });
+
+  return questionIds;
+}
+
 router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
   try {
     const targetUserId = getTargetUserId(req);
@@ -60,6 +403,9 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
       title,
       subject,
       totalQuestions,
+      examMode = 'all',
+      category,
+      subcategory,
       status = 'Unfinished',
       score = 0,
       date,
@@ -83,7 +429,32 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Score must be a number between 0 and 100.' });
     }
 
+    await ensureQuestionInfrastructure();
+
     const subjectId = await resolveSubjectId(subject);
+    if (!subjectId) {
+      return res.status(400).json({ success: false, message: 'Subject is required.' });
+    }
+
+    const subjectNameResult = await pool.query('SELECT name FROM subjects WHERE id = $1 LIMIT 1', [subjectId]);
+    const subjectName = subjectNameResult.rows[0]?.name || String(subject);
+    await ensureQuestionPoolForSubject(subjectId, subjectName);
+
+    const selectedQuestionIds = await selectQuestionsForQuiz({
+      subjectId,
+      userId: targetUserId,
+      totalQuestions: Math.round(normalizedTotalQuestions),
+      examMode,
+      category: category ? String(category).trim() : '',
+      subcategory: subcategory ? String(subcategory).trim() : '',
+    });
+
+    if (selectedQuestionIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No questions available for this subject and filter selection yet.',
+      });
+    }
 
     const result = await pool.query(
       `INSERT INTO quizzes (user_id, subject_id, title, score, total_questions, status, image_url, date)
@@ -95,17 +466,186 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
         subjectId,
         normalizedTitle,
         normalizedScore,
-        Math.round(normalizedTotalQuestions),
+        selectedQuestionIds.length,
         normalizedStatus,
         image || null,
         date || null,
       ]
     );
 
+    const quizId = result.rows[0].id;
+    const quizQuestionInserts = selectedQuestionIds.map((questionId, index) =>
+      pool.query(
+        `INSERT INTO quiz_questions (quiz_id, question_id, question_order)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (quiz_id, question_id) DO NOTHING`,
+        [quizId, questionId, index + 1]
+      )
+    );
+    await Promise.all(quizQuestionInserts);
+
     return res.status(201).json({ success: true, quiz: result.rows[0] });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: 'Failed to create quiz.' });
+  }
+});
+
+router.get('/:targetId/quizzes/:quizId/questions', authenticateToken, async (req, res) => {
+  try {
+    const targetUserId = getTargetUserId(req);
+    const { quizId } = req.params;
+
+    const questionsResult = await pool.query(
+      `SELECT
+         qq.question_order,
+         q.id,
+         q.question_text AS question,
+         q.explanation,
+         q.category,
+         q.subcategory,
+         COALESCE(s.name, 'General') AS subject,
+         EXISTS (
+           SELECT 1
+           FROM question_bookmarks qbkm
+           WHERE qbkm.user_id = $2 AND qbkm.question_id = q.id
+         ) AS is_bookmarked
+       FROM quiz_questions qq
+       JOIN quizzes qu ON qu.id = qq.quiz_id
+       JOIN questions q ON q.id = qq.question_id
+       LEFT JOIN question_banks qb ON qb.id = q.question_bank_id
+       LEFT JOIN subjects s ON s.id = qb.subject_id
+       WHERE qq.quiz_id = $1 AND qu.user_id = $2
+       ORDER BY qq.question_order ASC`,
+      [quizId, targetUserId]
+    );
+
+    const questionRows = questionsResult.rows;
+    if (questionRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No questions found for this quiz.' });
+    }
+
+    const questionIds = questionRows.map((row) => row.id);
+    const optionsResult = await pool.query(
+      `SELECT
+         qo.question_id,
+         qo.id,
+         qo.option_text,
+         qo.is_correct,
+         qo.option_order
+       FROM question_options qo
+       WHERE qo.question_id = ANY($1::uuid[])
+       ORDER BY qo.question_id, qo.option_order ASC`,
+      [questionIds]
+    );
+
+    const optionsByQuestion = new Map();
+    for (const optionRow of optionsResult.rows) {
+      const existing = optionsByQuestion.get(optionRow.question_id) || [];
+      existing.push(optionRow);
+      optionsByQuestion.set(optionRow.question_id, existing);
+    }
+
+    const questions = questionRows.map((row) => {
+      const options = optionsByQuestion.get(row.id) || [];
+      const correctOption = options.find((option) => option.is_correct);
+
+      return {
+        id: row.id,
+        question: row.question,
+        choices: options.map((option) => option.option_text),
+        correctAnswer: correctOption?.option_text || null,
+        explanation: row.explanation,
+        category: row.category,
+        subcategory: row.subcategory,
+        subject: row.subject,
+        isBookmarked: row.is_bookmarked,
+      };
+    });
+
+    return res.json({ success: true, questions });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch quiz questions.' });
+  }
+});
+
+router.post('/:targetId/questions/:questionId/bookmark', authenticateToken, async (req, res) => {
+  try {
+    const targetUserId = getTargetUserId(req);
+    const { questionId } = req.params;
+    const { bookmarked } = req.body;
+
+    if (String(targetUserId) !== String(req.user.id)) {
+      return res.status(403).json({ success: false, message: 'Not authorized to modify bookmarks for this user.' });
+    }
+
+    await ensureQuestionInfrastructure();
+
+    if (bookmarked === false) {
+      await pool.query('DELETE FROM question_bookmarks WHERE user_id = $1 AND question_id = $2', [targetUserId, questionId]);
+      return res.json({ success: true, bookmarked: false });
+    }
+
+    await pool.query(
+      `INSERT INTO question_bookmarks (user_id, question_id)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id, question_id) DO NOTHING`,
+      [targetUserId, questionId]
+    );
+
+    return res.json({ success: true, bookmarked: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Failed to update bookmark.' });
+  }
+});
+
+router.get('/:targetId/bookmarks', authenticateToken, async (req, res) => {
+  try {
+    const targetUserId = getTargetUserId(req);
+    const { subject, category, subcategory } = req.query;
+
+    const values = [targetUserId];
+    const filters = ['qbkm.user_id = $1'];
+
+    if (subject) {
+      values.push(String(subject));
+      filters.push(`LOWER(s.name) = LOWER($${values.length})`);
+    }
+
+    if (category) {
+      values.push(String(category));
+      filters.push(`LOWER(COALESCE(q.category, '')) = LOWER($${values.length})`);
+    }
+
+    if (subcategory) {
+      values.push(String(subcategory));
+      filters.push(`LOWER(COALESCE(q.subcategory, '')) = LOWER($${values.length})`);
+    }
+
+    const result = await pool.query(
+      `SELECT
+         q.id,
+         q.question_text AS question,
+         q.explanation,
+         q.category,
+         q.subcategory,
+         COALESCE(s.name, 'General') AS subject,
+         qbkm.created_at AS bookmarked_at
+       FROM question_bookmarks qbkm
+       JOIN questions q ON q.id = qbkm.question_id
+       LEFT JOIN question_banks qb ON qb.id = q.question_bank_id
+       LEFT JOIN subjects s ON s.id = qb.subject_id
+       WHERE ${filters.join(' AND ')}
+       ORDER BY qbkm.created_at DESC`,
+      values
+    );
+
+    return res.json({ success: true, bookmarks: result.rows });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch bookmarked questions.' });
   }
 });
 
@@ -306,6 +846,15 @@ router.get('/:targetId/subjects', authenticateToken, async (req, res) => {
   try {
     const targetUserId = getTargetUserId(req);
 
+    for (const subjectName of CANONICAL_SUBJECT_NAMES) {
+      await pool.query(
+        `INSERT INTO subjects (name)
+         VALUES ($1)
+         ON CONFLICT (name) DO NOTHING`,
+        [subjectName]
+      );
+    }
+
     const result = await pool.query(
       `SELECT
          s.id,
@@ -314,9 +863,10 @@ router.get('/:targetId/subjects', authenticateToken, async (req, res) => {
          COALESCE(AVG(CASE WHEN q.status = 'Finished' THEN q.score END), 0)::float AS avg_score
        FROM subjects s
        LEFT JOIN quizzes q ON q.subject_id = s.id AND q.user_id = $1
+       WHERE s.name = ANY($2::text[])
        GROUP BY s.id, s.name
-       ORDER BY s.name ASC`,
-      [targetUserId]
+       ORDER BY array_position($2::text[], s.name), s.name ASC`,
+      [targetUserId, CANONICAL_SUBJECT_NAMES]
     );
 
     return res.json(result.rows);
@@ -331,24 +881,71 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
     const targetUserId = getTargetUserId(req);
     const { subjectId } = req.params;
 
-    const chapterResult = await pool.query(
-      `SELECT
-         c.id,
-         c.name,
-         COALESCE(ca.proficiency, 0)::int AS score,
-         COALESCE(ca.questions_attempted, 0)::int AS questions,
-         COALESCE(ca.correct_answers, 0)::int AS correct,
-         GREATEST(COALESCE(ca.questions_attempted, 0) - COALESCE(ca.correct_answers, 0), 0)::int AS wrong,
-         CASE WHEN COALESCE(ca.category, 'Average') = 'Strong' THEN 'up' ELSE 'down' END AS trend,
-         (COALESCE(ca.questions_attempted, 0) * 2)::int AS "timeSpent"
-       FROM chapters c
-       LEFT JOIN chapter_analytics ca ON ca.chapter_id = c.id AND ca.user_id = $1
-       WHERE c.subject_id = $2
-       ORDER BY c.name ASC`,
+    const categoryResult = await pool.query(
+      `WITH category_pool AS (
+         SELECT
+           COALESCE(NULLIF(q.category, ''), 'General') AS category,
+           COUNT(*)::int AS pool_questions
+         FROM questions q
+         JOIN question_banks qb ON qb.id = q.question_bank_id
+         WHERE qb.subject_id = $2 AND q.is_active = TRUE
+         GROUP BY COALESCE(NULLIF(q.category, ''), 'General')
+       ),
+       category_usage AS (
+         SELECT
+           COALESCE(NULLIF(q.category, ''), 'General') AS category,
+           COUNT(*)::int AS used_questions,
+           COALESCE(AVG(qu.score), 0)::float AS avg_quiz_score
+         FROM quizzes qu
+         JOIN quiz_questions qq ON qq.quiz_id = qu.id
+         JOIN questions q ON q.id = qq.question_id
+         WHERE qu.user_id = $1 AND qu.subject_id = $2
+         GROUP BY COALESCE(NULLIF(q.category, ''), 'General')
+       ),
+       category_attempts AS (
+         SELECT
+           COALESCE(NULLIF(q.category, ''), 'General') AS category,
+           COUNT(*)::int AS attempts,
+           COALESCE(SUM(CASE WHEN uqa.is_correct THEN 1 ELSE 0 END), 0)::int AS correct
+         FROM user_question_attempts uqa
+         JOIN quizzes qu ON qu.id = uqa.quiz_id
+         JOIN questions q ON q.id = uqa.question_id
+         WHERE uqa.user_id = $1 AND qu.subject_id = $2
+         GROUP BY COALESCE(NULLIF(q.category, ''), 'General')
+       )
+       SELECT
+         cp.category AS name,
+         cp.pool_questions,
+         COALESCE(ca.attempts, cu.used_questions, 0)::int AS questions,
+         COALESCE(
+           ca.correct,
+           ROUND((COALESCE(cu.avg_quiz_score, 0) / 100.0) * COALESCE(cu.used_questions, 0))::int,
+           0
+         )::int AS correct
+       FROM category_pool cp
+       LEFT JOIN category_usage cu ON cu.category = cp.category
+       LEFT JOIN category_attempts ca ON ca.category = cp.category
+       ORDER BY cp.category ASC`,
       [targetUserId, subjectId]
     );
 
-    let chapters = chapterResult.rows;
+    let chapters = categoryResult.rows.map((row) => {
+      const questions = Number(row.questions || 0);
+      const correct = Number(row.correct || 0);
+      const wrong = Math.max(0, questions - correct);
+      const score = questions > 0 ? Math.round((correct / questions) * 100) : 0;
+
+      return {
+        id: `category-${row.name.toLowerCase().replaceAll(/\s+/g, '-')}`,
+        name: row.name,
+        score,
+        questions,
+        correct,
+        wrong,
+        trend: score >= 70 ? 'up' : 'down',
+        timeSpent: questions * 2,
+      };
+    });
 
     if (chapters.length === 0) {
       const quizSummary = await pool.query(
@@ -393,11 +990,9 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
         overallScore,
         strongAreas,
         weakAreas,
-        questionTypes: {
-          'Multiple Choice': chapters.length ? overallScore : 0,
-          'Problem Solving': chapters.length ? Math.max(0, overallScore - 8) : 0,
-          'True/False': chapters.length ? Math.min(100, overallScore + 5) : 0,
-        },
+        questionTypes: Object.fromEntries(
+          chapters.map((categoryRow) => [categoryRow.name, categoryRow.score])
+        ),
       },
     });
   } catch (error) {

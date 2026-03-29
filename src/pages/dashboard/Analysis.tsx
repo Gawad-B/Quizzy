@@ -47,7 +47,7 @@ const Analysis = () => {
           fontWeight: 400,
           fontSize: { xs: '0.98rem', sm: '1.05rem', md: '1.2rem' }
         }}>
-          Deep dive into your performance by subject and chapter
+          Deep dive into your performance by subject and category
         </Typography>
       </Box>
 
@@ -70,13 +70,13 @@ const Analysis = () => {
       {/* Analytics Content */}
       {selectedSubject && (
         <>
-          {/* Chapter Analytics */}
+          {/* Category Analytics */}
           <Paper elevation={2} sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: 3, mb: { xs: 3, md: 4 } }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
-              Chapter Performance Breakdown
+              Category Performance Breakdown
             </Typography>
             {analysisLoading ? (
-              <Typography sx={{ color: theme.palette.text.secondary }}>Loading chapter analytics...</Typography>
+              <Typography sx={{ color: theme.palette.text.secondary }}>Loading category analytics...</Typography>
             ) : (
               <ChapterAnalytics chapters={analysisData?.chapters ?? []} />
             )}

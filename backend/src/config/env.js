@@ -9,9 +9,26 @@ if (missingVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
 }
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+const isProduction = nodeEnv === 'production';
+
+if (isProduction && String(process.env.JWT_SECRET || '').length < 32) {
+  throw new Error('JWT_SECRET must be at least 32 characters in production.');
+}
+
+const databaseUrl = String(process.env.DATABASE_URL || '');
+const insecureSslModeMatch = databaseUrl.match(/(?:\?|&)sslmode=([^&]+)/i);
+const insecureSslMode = insecureSslModeMatch?.[1]?.toLowerCase();
+
+if (isProduction && ['prefer', 'require', 'verify-ca'].includes(String(insecureSslMode || ''))) {
+  throw new Error('In production, DATABASE_URL must use sslmode=verify-full or explicitly set uselibpqcompat=true for libpq semantics.');
+}
+
 export const env = {
+  nodeEnv,
+  isProduction,
   port: Number(process.env.PORT || 3000),
-  databaseUrl: process.env.DATABASE_URL,
+  databaseUrl,
   jwtSecret: process.env.JWT_SECRET,
   firebaseApiKey: process.env.FIREBASE_API_KEY,
   // For deployment, set CORS_ORIGIN to frontend domain (comma-separated if multiple)

@@ -11,97 +11,132 @@ import {
   Paper,
   Slider,
   InputAdornment,
-  Checkbox,
   ListItemText,
-  FormHelperText,
-  Chip
+  FormHelperText
 } from '@mui/material';
 import { School as SubjectIcon, Quiz as QuizIcon, Help as QuestionIcon } from '@mui/icons-material';
 
 interface QuizDetailsProps {
   details: {
     subject: string;
-    chapters: string[];
+    category: string;
+    subcategory: string;
     quizName: string;
     questionCount: number;
   };
-  onDetailsChange: (details: { subject: string; chapters: string[]; quizName: string; questionCount: number }) => void;
+  onDetailsChange: (details: {
+    subject: string;
+    category: string;
+    subcategory: string;
+    quizName: string;
+    questionCount: number;
+  }) => void;
 }
 
 const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) => {
-  // Mock data for subjects and chapters - in real app this would come from API
-  const subjectsData = {
+  type SubjectDefinition = {
+    name: string;
+    categories: Record<string, string[]>;
+  };
+
+  // Subject taxonomy used for category/subcategory generation.
+  const subjectsData: Record<string, SubjectDefinition> = {
     math: {
       name: 'Mathematics',
-      chapters: [
-        'Algebra Basics',
-        'Linear Equations',
-        'Quadratic Functions',
-        'Geometry',
-        'Trigonometry',
-        'Calculus Intro'
-      ]
+      categories: {
+        Algebra: ['Linear Equations', 'Quadratic Expressions', 'Polynomials'],
+        Geometry: ['Triangles', 'Circles', 'Coordinate Geometry'],
+        Calculus: ['Limits', 'Derivatives', 'Integrals']
+      }
     },
     science: {
       name: 'Science',
-      chapters: [
-        'Physics Fundamentals',
-        'Chemistry Basics',
-        'Biology Systems',
-        'Earth Science'
-      ]
+      categories: {
+        Physics: ['Motion and Forces', 'Energy', 'Waves and Optics'],
+        Chemistry: ['Atoms and Molecules', 'Chemical Reactions', 'Acids and Bases'],
+        Biology: ['Cell Structure', 'Genetics', 'Ecosystems']
+      }
     },
     history: {
       name: 'History',
-      chapters: [
-        'Ancient Civilizations',
-        'Medieval Period',
-        'Modern History',
-        'World Wars'
-      ]
+      categories: {
+        Ancient: ['Mesopotamia', 'Egypt', 'Ancient Greece'],
+        Medieval: ['Feudalism', 'Crusades', 'Renaissance'],
+        Modern: ['Industrial Revolution', 'World Wars', 'Cold War']
+      }
     },
     literature: {
       name: 'Literature',
-      chapters: [
-        'Classic Novels',
-        'Poetry Analysis',
-        'Shakespeare',
-        'Modern Literature'
-      ]
+      categories: {
+        Fiction: ['Narrative Voice', 'Plot Structure', 'Character Development'],
+        Poetry: ['Imagery', 'Meter and Rhythm', 'Figurative Language'],
+        Drama: ['Dialogue', 'Conflict', 'Stagecraft']
+      }
     },
     geography: {
       name: 'Geography',
-      chapters: [
-        'World Geography',
-        'Physical Geography',
-        'Human Geography',
-        'Economic Geography'
-      ]
+      categories: {
+        Physical: ['Landforms', 'Climate Systems', 'Natural Resources'],
+        Human: ['Population', 'Urbanization', 'Migration'],
+        Economic: ['Trade Networks', 'Development', 'Globalization']
+      }
     }
   };
 
-  const [availableChapters, setAvailableChapters] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
 
   useEffect(() => {
-    if (details.subject) {
-      const chapters = subjectsData[details.subject as keyof typeof subjectsData]?.chapters || [];
-      setAvailableChapters(chapters);
-      // Reset chapters if current selections are not available in new subject
-      const validChapters = details.chapters.filter(chapter => chapters.includes(chapter));
-      if (validChapters.length !== details.chapters.length) {
-        onDetailsChange({ ...details, chapters: validChapters });
-      }
-    } else {
-      setAvailableChapters([]);
+    if (!details.subject) {
+      setAvailableCategories([]);
+      setAvailableSubcategories([]);
+      return;
+    }
+
+    const selectedSubject = subjectsData[details.subject];
+    const categories = selectedSubject ? Object.keys(selectedSubject.categories) : [];
+    setAvailableCategories(categories);
+
+    if (!categories.includes(details.category)) {
+      onDetailsChange({ ...details, category: '', subcategory: '' });
+      setAvailableSubcategories([]);
+      return;
+    }
+
+    const subcategories = selectedSubject.categories[details.category] || [];
+    setAvailableSubcategories(subcategories);
+
+    if (details.subcategory && !subcategories.includes(details.subcategory)) {
+      onDetailsChange({ ...details, subcategory: '' });
     }
   }, [details.subject]);
 
+  useEffect(() => {
+    if (!details.subject || !details.category) {
+      setAvailableSubcategories([]);
+      return;
+    }
+
+    const selectedSubject = subjectsData[details.subject];
+    if (!selectedSubject) {
+      setAvailableSubcategories([]);
+      return;
+    }
+
+    const subcategories = selectedSubject.categories[details.category] || [];
+    setAvailableSubcategories(subcategories);
+  }, [details.subject, details.category]);
+
   const handleSubjectChange = (subject: string) => {
-    onDetailsChange({ ...details, subject, chapters: [] });
+    onDetailsChange({ ...details, subject, category: '', subcategory: '' });
   };
 
-  const handleChapterChange = (chapters: string[]) => {
-    onDetailsChange({ ...details, chapters });
+  const handleCategoryChange = (category: string) => {
+    onDetailsChange({ ...details, category, subcategory: '' });
+  };
+
+  const handleSubcategoryChange = (subcategory: string) => {
+    onDetailsChange({ ...details, subcategory });
   };
 
   const handleQuizNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +149,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
 
   const handleQuestionCountInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (!isNaN(value) && value >= 1 && value <= 100) {
+    if (!isNaN(value) && value >= 1 && value <= 50) {
       onDetailsChange({ ...details, questionCount: value });
     }
   };
@@ -158,31 +193,41 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
               </Select>
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel>Chapters</InputLabel>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel>Category</InputLabel>
               <Select
-                multiple
-                value={details.chapters}
-                label="Chapters"
-                onChange={(e) => handleChapterChange(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
+                value={details.category}
+                label="Category"
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 disabled={!details.subject}
-                renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} size="small" />
-                    ))}
-                  </Box>
-                )}
               >
-                {availableChapters.map((chapter) => (
-                  <MenuItem key={chapter} value={chapter}>
-                    <Checkbox checked={details.chapters.indexOf(chapter) > -1} />
-                    <ListItemText primary={chapter} />
+                {availableCategories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    <ListItemText primary={category} />
                   </MenuItem>
                 ))}
               </Select>
               <FormHelperText>
-                Select one or more chapters for your quiz
+                Select a category based on your selected subject
+              </FormHelperText>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Subcategory</InputLabel>
+              <Select
+                value={details.subcategory}
+                label="Subcategory"
+                onChange={(e) => handleSubcategoryChange(e.target.value)}
+                disabled={!details.category}
+              >
+                {availableSubcategories.map((subcategory) => (
+                  <MenuItem key={subcategory} value={subcategory}>
+                    <ListItemText primary={subcategory} />
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>
+                Select a subcategory for targeted question generation
               </FormHelperText>
             </FormControl>
           </Paper>
@@ -222,14 +267,12 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
                 value={details.questionCount}
                 onChange={handleQuestionCountChange}
                 min={1}
-                max={100}
+                max={50}
                 step={1}
                 marks={[
                   { value: 1, label: '1' },
                   { value: 25, label: '25' },
-                  { value: 50, label: '50' },
-                  { value: 75, label: '75' },
-                  { value: 100, label: '100' }
+                  { value: 50, label: '50' }
                 ]}
                 sx={{ mb: 2 }}
               />
@@ -239,14 +282,14 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
                 value={details.questionCount}
                 onChange={handleQuestionCountInputChange}
                 InputProps={{
-                  inputProps: { min: 1, max: 100 },
+                  inputProps: { min: 1, max: 50 },
                   startAdornment: (
                     <InputAdornment position="start">
                       <QuestionIcon sx={{ fontSize: 20, color: 'action.active' }} />
                     </InputAdornment>
                   ),
                 }}
-                helperText="Enter a value between 1-100"
+                helperText="Enter a value between 1-50"
               />
             </Box>
           </Paper>
@@ -254,7 +297,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
       </Grid>
 
       {/* Summary */}
-      {details.subject && details.chapters.length > 0 && details.quizName && (
+      {details.subject && details.category && details.subcategory && details.quizName && (
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mt: 4, bgcolor: 'success.light' }}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'success.dark' }}>
             Quiz Summary
@@ -267,7 +310,12 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Typography variant="body2" sx={{ color: 'success.dark' }}>
-                <strong>Chapters:</strong> {details.chapters.join(', ')}
+                <strong>Category:</strong> {details.category}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Typography variant="body2" sx={{ color: 'success.dark' }}>
+                <strong>Subcategory:</strong> {details.subcategory}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -275,7 +323,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
                 <strong>Quiz Name:</strong> {details.quizName}
               </Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 12 }}>
               <Typography variant="body2" sx={{ color: 'success.dark' }}>
                 <strong>Questions:</strong> {details.questionCount}
               </Typography>

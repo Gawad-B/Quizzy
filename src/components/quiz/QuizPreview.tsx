@@ -35,7 +35,8 @@ interface QuizPreviewProps {
     examMode: 'solved' | 'new' | 'bookmarked' | 'all';
     details: {
       subject: string;
-      chapters: string[];
+      category: string;
+      subcategory: string;
       quizName: string;
       questionCount: number;
     };
@@ -44,7 +45,7 @@ interface QuizPreviewProps {
 }
 
 const QuizPreview: FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
-  const subjectsData = {
+  const subjectsData: Record<string, string> = {
     math: 'Mathematics',
     science: 'Science',
     history: 'History',
@@ -173,10 +174,22 @@ const QuizPreview: FC<QuizPreviewProps> = ({ quizData, onGenerate }) => {
              <Box sx={{ textAlign: 'center', p: 2 }}>
                <ChapterIcon sx={{ fontSize: 32, color: 'info.main', mb: 1 }} />
                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                 Chapters
+                Category
                </Typography>
                <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                 {quizData.details.chapters.join(', ')}
+                {quizData.details.category}
+              </Typography>
+            </Box>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Box sx={{ textAlign: 'center', p: 2 }}>
+              <ChapterIcon sx={{ fontSize: 32, color: 'info.main', mb: 1 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Subcategory
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                {quizData.details.subcategory}
                </Typography>
              </Box>
            </Grid>
