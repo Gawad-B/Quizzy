@@ -172,6 +172,16 @@ const Bookmarks = () => {
               setCategoryFilter('');
               setSubcategoryFilter('');
             }}
+            sx={{
+              color: theme.palette.text.secondary,
+              backgroundColor: 'transparent',
+              boxShadow: 'none',
+              '&:hover': {
+                color: theme.palette.text.primary,
+                backgroundColor: theme.palette.action.hover,
+                boxShadow: 'none',
+              },
+            }}
           >
             Clear Filters
           </Button>
@@ -207,6 +217,16 @@ const Bookmarks = () => {
                     variant="text"
                     startIcon={<BookmarkIcon />}
                     onClick={() => removeBookmark(bookmark.id)}
+                    sx={{
+                      color: theme.palette.warning.main,
+                      backgroundColor: 'transparent',
+                      boxShadow: 'none',
+                      '&:hover': {
+                        color: theme.palette.warning.light,
+                        backgroundColor: theme.palette.action.hover,
+                        boxShadow: 'none',
+                      },
+                    }}
                   >
                     Remove Bookmark
                   </Button>

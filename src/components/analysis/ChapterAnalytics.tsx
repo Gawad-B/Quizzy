@@ -24,10 +24,21 @@ const ChapterAnalytics: React.FC<ChapterAnalyticsProps> = ({ chapters = [] }) =>
     return '#f44336';
   };
 
-  const formatTime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  const formatTime = (seconds: number) => {
+    const totalSeconds = Math.max(0, Math.round(Number(seconds || 0)));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+
+    if (minutes > 0) {
+      return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`;
+    }
+
+    return `${secs}s`;
   };
 
   return (

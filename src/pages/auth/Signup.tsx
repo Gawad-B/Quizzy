@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useAuthQuery } from '../../hooks/useAuthQuery';
 import ThemeToggle from '../../components/ui/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
@@ -616,6 +618,7 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   style={{
                     position: 'absolute',
                     right: '0.6rem',
@@ -623,16 +626,25 @@ const Signup = () => {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
+                    borderRadius: 0,
+                    boxShadow: 'none',
+                    outline: 'none',
+                    appearance: 'none',
                     cursor: 'pointer',
                     color: textSecondary,
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.02em',
-                    padding: '0.25rem'
+                    padding: 0,
+                    lineHeight: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                   disabled={isSigningUp}
                 >
-                  {showPassword ? 'HIDE' : 'SHOW'}
+                  {showPassword ? (
+                    <VisibilityOffOutlinedIcon sx={{ fontSize: 22, color: textSecondary }} />
+                  ) : (
+                    <VisibilityOutlinedIcon sx={{ fontSize: 22, color: textSecondary }} />
+                  )}
                 </button>
               </div>
               <p style={{
@@ -662,6 +674,7 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   style={{
                     position: 'absolute',
                     right: '0.6rem',
@@ -669,16 +682,25 @@ const Signup = () => {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
+                    borderRadius: 0,
+                    boxShadow: 'none',
+                    outline: 'none',
+                    appearance: 'none',
                     cursor: 'pointer',
                     color: textSecondary,
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.02em',
-                    padding: '0.25rem'
+                    padding: 0,
+                    lineHeight: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                   disabled={isSigningUp}
                 >
-                  {showConfirmPassword ? 'HIDE' : 'SHOW'}
+                  {showConfirmPassword ? (
+                    <VisibilityOffOutlinedIcon sx={{ fontSize: 22, color: textSecondary }} />
+                  ) : (
+                    <VisibilityOutlinedIcon sx={{ fontSize: 22, color: textSecondary }} />
+                  )}
                 </button>
               </div>
               {errors.confirmPassword && <p style={errorStyle}>{errors.confirmPassword}</p>}

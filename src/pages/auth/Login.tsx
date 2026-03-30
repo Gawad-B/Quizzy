@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useAuthQuery } from '../../hooks/useAuthQuery';
 import { authAPI } from '../../services/authService';
 import ThemeToggle from '../../components/ui/ThemeToggle';
@@ -419,6 +421,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 style={{
                   position: 'absolute',
                   right: '0.75rem',
@@ -426,16 +429,25 @@ const Login = () => {
                   transform: 'translateY(-50%)',
                   background: 'none',
                   border: 'none',
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  outline: 'none',
+                  appearance: 'none',
                   cursor: 'pointer',
                   color: textSecondary,
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                  padding: '0.25rem'
+                  padding: 0,
+                  lineHeight: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
                 disabled={isLoggingIn}
               >
-                {showPassword ? 'HIDE' : 'SHOW'}
+                {showPassword ? (
+                  <VisibilityOffOutlinedIcon sx={{ fontSize: 22, color: textSecondary }} />
+                ) : (
+                  <VisibilityOutlinedIcon sx={{ fontSize: 22, color: textSecondary }} />
+                )}
               </button>
             </div>
             {errors.password && (

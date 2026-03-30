@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, CardActionArea, Chip } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface ExamMode {
   id: 'solved' | 'new' | 'bookmarked' | 'all';
@@ -17,24 +18,41 @@ interface ExamModeCardProps {
 }
 
 const ExamModeCard: React.FC<ExamModeCardProps> = ({ mode, isSelected, onSelect }) => {
+  const theme = useTheme();
+  const selectedBackground = alpha(mode.color, theme.palette.mode === 'dark' ? 0.2 : 0.1);
+  const hoverBackground = alpha(mode.color, theme.palette.mode === 'dark' ? 0.28 : 0.14);
+
   return (
     <Card
       sx={{
         height: '100%',
-        border: `2px solid ${isSelected ? mode.color : 'transparent'}`,
-        backgroundColor: isSelected ? `${mode.color}10` : 'transparent',
+        border: `2px solid ${isSelected ? mode.color : theme.palette.divider}`,
+        backgroundColor: isSelected ? selectedBackground : 'background.paper',
         transition: 'all 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 4,
           borderColor: mode.color,
-          backgroundColor: `${mode.color}15`
+          backgroundColor: hoverBackground
         }
       }}
     >
       <CardActionArea
         onClick={() => onSelect(mode.id)}
-        sx={{ height: '100%', p: 0 }}
+        sx={{
+          height: '100%',
+          p: 0,
+          color: 'inherit',
+          backgroundColor: 'transparent !important',
+          boxShadow: 'none !important',
+          '&:hover': {
+            backgroundColor: 'transparent !important',
+            boxShadow: 'none !important',
+          },
+          '& .MuiCardActionArea-focusHighlight': {
+            backgroundColor: 'transparent',
+          },
+        }}
       >
         <CardContent sx={{ p: 3, height: '100%' }}>
           {/* Header */}

@@ -992,6 +992,8 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
     const targetUserId = getTargetUserId(req);
     const { subjectId } = req.params;
 
+    await ensureAttemptTimingInfrastructure();
+
     const categoryResult = await pool.query(
       `WITH category_pool AS (
          SELECT
@@ -1017,7 +1019,8 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
          SELECT
            COALESCE(NULLIF(q.category, ''), 'General') AS category,
            COUNT(*)::int AS attempts,
-           COALESCE(SUM(CASE WHEN uqa.is_correct THEN 1 ELSE 0 END), 0)::int AS correct
+           COALESCE(SUM(CASE WHEN uqa.is_correct THEN 1 ELSE 0 END), 0)::int AS correct,
+           COALESCE(SUM(COALESCE(uqa.time_spent_seconds, 0)), 0)::int AS time_spent_seconds
          FROM user_question_attempts uqa
          JOIN quizzes qu ON qu.id = uqa.quiz_id
          JOIN questions q ON q.id = uqa.question_id
@@ -1028,6 +1031,7 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
          cp.category AS name,
          cp.pool_questions,
          COALESCE(ca.attempts, cu.used_questions, 0)::int AS questions,
+         COALESCE(ca.time_spent_seconds, 0)::int AS time_spent_seconds,
          COALESCE(
            ca.correct,
            ROUND((COALESCE(cu.avg_quiz_score, 0) / 100.0) * COALESCE(cu.used_questions, 0))::int,
@@ -1045,6 +1049,7 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
       const correct = Number(row.correct || 0);
       const wrong = Math.max(0, questions - correct);
       const score = questions > 0 ? Math.round((correct / questions) * 100) : 0;
+      const timeSpentSeconds = Number(row.time_spent_seconds || 0);
 
       return {
         id: `category-${row.name.toLowerCase().replaceAll(/\s+/g, '-')}`,
@@ -1054,7 +1059,7 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
         correct,
         wrong,
         trend: score >= 70 ? 'up' : 'down',
-        timeSpent: questions * 2,
+        timeSpent: timeSpentSeconds,
       };
     });
 
@@ -1062,7 +1067,8 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
       const quizSummary = await pool.query(
         `SELECT
            COALESCE(AVG(score), 0)::float AS avg_score,
-           COALESCE(SUM(total_questions), 0)::int AS total_questions
+           COALESCE(SUM(total_questions), 0)::int AS total_questions,
+           COALESCE(SUM(duration_seconds), 0)::int AS total_duration_seconds
          FROM quizzes
          WHERE user_id = $1 AND subject_id = $2`,
         [targetUserId, subjectId]
@@ -1070,6 +1076,7 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
 
       const avgScore = Number(quizSummary.rows[0]?.avg_score || 0);
       const totalQuestions = Number(quizSummary.rows[0]?.total_questions || 0);
+      const totalDurationSeconds = Number(quizSummary.rows[0]?.total_duration_seconds || 0);
       const estimatedCorrect = Math.round((avgScore / 100) * totalQuestions);
 
       if (totalQuestions > 0) {
@@ -1082,7 +1089,7 @@ router.get('/:targetId/analysis/:subjectId', authenticateToken, async (req, res)
             correct: estimatedCorrect,
             wrong: Math.max(0, totalQuestions - estimatedCorrect),
             trend: avgScore >= 70 ? 'up' : 'down',
-            timeSpent: totalQuestions * 2,
+            timeSpent: totalDurationSeconds,
           },
         ];
       }
