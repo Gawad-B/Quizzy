@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthQuery } from '../../hooks/useAuthQuery';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FormData {
   first_name: string;
@@ -129,6 +131,7 @@ const Signup = () => {
   ];
 
   const { signup, user, isSigningUp } = useAuthQuery();
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedPhoneCode, setSelectedPhoneCode] = useState('');
@@ -310,7 +313,7 @@ const Signup = () => {
 
       if (result.success) {
         const successMessage = result.message
-          || 'Account created. Check your inbox and spam folder for the verification email. If it does not arrive, use Resend verification on login.';
+          || 'Account created. Check your inbox and spam folder for the verification email. If it does not arrive, use Resend Verification Email on login.';
         navigate('/login', {
           replace: true,
           state: {
@@ -331,11 +334,11 @@ const Signup = () => {
   const inputStyle = (error?: string) => ({
     width: '100%',
     padding: '0.875rem 1rem',
-    border: `2px solid ${error ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+    border: `2px solid ${error ? '#ef4444' : (isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)')}`,
     borderRadius: '12px',
     fontSize: '1rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    color: 'white',
+    background: isDarkMode ? '#101013' : '#ffffff',
+    color: isDarkMode ? '#f4f4f5' : '#0f172a',
     transition: 'all 0.3s ease',
     marginBottom: '0.5rem',
     outline: 'none'
@@ -343,7 +346,7 @@ const Signup = () => {
 
   const labelStyle = {
     display: 'block',
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: isDarkMode ? '#f4f4f5' : '#0f172a',
     fontSize: '0.9rem',
     fontWeight: '500',
     marginBottom: '0.6rem'
@@ -361,6 +364,16 @@ const Signup = () => {
     marginBottom: '1rem'
   };
 
+  const pageBackground = isDarkMode
+    ? 'radial-gradient(circle at top right, #1a1a1f 0%, #0b0b0c 60%, #050506 100%)'
+    : 'radial-gradient(circle at top right, #f1f5f9 0%, #f7f7f8 55%, #ffffff 100%)';
+  const cardBackground = isDarkMode ? '#131316' : '#ffffff';
+  const cardBorder = isDarkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(15,23,42,0.1)';
+  const textPrimary = isDarkMode ? '#f4f4f5' : '#0f172a';
+  const textSecondary = isDarkMode ? 'rgba(244,244,245,0.72)' : '#475569';
+  const primaryButtonBackground = isDarkMode ? '#f4f4f5' : '#111827';
+  const primaryButtonText = isDarkMode ? '#0b0b0c' : '#ffffff';
+
   return (
     <div style={{
       width: '100%',
@@ -368,30 +381,42 @@ const Signup = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+      background: pageBackground,
       padding: isMobile ? '1rem 0.75rem' : isTablet ? '2rem 1rem' : '3rem 1rem',
       backgroundAttachment: 'fixed'
     }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 10,
+          borderRadius: '999px',
+          border: cardBorder,
+          background: cardBackground,
+          color: textPrimary,
+        }}
+      >
+        <ThemeToggle size="small" />
+      </div>
+
       <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        background: cardBackground,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: cardBorder,
         borderRadius: isMobile ? '18px' : '24px',
         padding: isMobile ? '1.25rem 1rem' : isTablet ? '2rem 1.6rem' : '3rem 2.5rem',
         width: '100%',
         maxWidth: '650px',
         margin: isMobile ? '0.5rem auto' : isTablet ? '1rem auto' : '2rem auto',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 100px rgba(102, 126, 234, 0.1)',
+        boxShadow: isDarkMode ? '0 20px 60px rgba(0, 0, 0, 0.45)' : '0 20px 60px rgba(15, 23, 42, 0.12)',
         position: 'relative',
         zIndex: 1
       }}>
         <div style={{ textAlign: 'center', marginBottom: isMobile ? '1.2rem' : '2.5rem' }}>
           <h1 style={{
-            background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: textPrimary,
             fontSize: isMobile ? '1.8rem' : isTablet ? '2.1rem' : '2.5rem',
             fontWeight: '800',
             marginBottom: '0.75rem',
@@ -400,7 +425,7 @@ const Signup = () => {
             Create Account
           </h1>
           <p style={{
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: textSecondary,
             fontSize: '0.95rem',
             margin: 0
           }}>
@@ -462,21 +487,21 @@ const Signup = () => {
                     style={{
                       width: '100%',
                       padding: '0.875rem 0.5rem',
-                      border: `2px solid ${errors.phone ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+                      border: `2px solid ${errors.phone ? '#ef4444' : (isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)')}`,
                       borderRadius: '12px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      color: 'rgba(255, 255, 255, 0.9)',
+                      background: isDarkMode ? '#101013' : '#ffffff',
+                      color: isDarkMode ? '#f4f4f5' : '#0f172a',
                       fontSize: '0.9rem',
                       fontWeight: 600,
                       outline: 'none'
                     }}
                     disabled={isSigningUp}
                   >
-                    <option value="" style={{ background: '#1a1f3a', color: 'rgba(255,255,255,0.6)' }}>
+                    <option value="" style={{ background: isDarkMode ? '#101013' : '#ffffff', color: isDarkMode ? '#d4d4d8' : '#475569' }}>
                       Code
                     </option>
                     {phoneRules.map((rule) => (
-                      <option key={rule.code} value={rule.code} style={{ background: '#1a1f3a', color: '#fff' }}>
+                      <option key={rule.code} value={rule.code} style={{ background: isDarkMode ? '#101013' : '#ffffff', color: isDarkMode ? '#ffffff' : '#0f172a' }}>
                         {`${rule.flag} ${rule.code}`}
                       </option>
                     ))}
@@ -496,7 +521,7 @@ const Signup = () => {
                 />
               </div>
               <p style={{
-                color: 'rgba(255, 255, 255, 0.65)',
+                color: textSecondary,
                 fontSize: '0.75rem',
                 marginTop: '0.4rem',
                 marginBottom: errors.phone ? '0.4rem' : '1rem',
@@ -518,11 +543,11 @@ const Signup = () => {
                 style={inputStyle(errors.nationality)}
                 disabled={isSigningUp}
               >
-                <option value="" style={{ background: '#1a1f3a', color: 'rgba(255,255,255,0.6)' }}>
+                <option value="" style={{ background: isDarkMode ? '#101013' : '#ffffff', color: isDarkMode ? '#d4d4d8' : '#475569' }}>
                   Select nationality
                 </option>
                 {nationalityOptions.map((option) => (
-                  <option key={option.value} value={option.value} style={{ background: '#1a1f3a', color: '#fff' }}>
+                  <option key={option.value} value={option.value} style={{ background: isDarkMode ? '#101013' : '#ffffff', color: isDarkMode ? '#ffffff' : '#0f172a' }}>
                     {option.label}
                   </option>
                 ))}
@@ -542,11 +567,11 @@ const Signup = () => {
                 style={inputStyle(errors.grade)}
                 disabled={isSigningUp}
               >
-                <option value="" style={{ background: '#1a1f3a', color: 'rgba(255,255,255,0.6)' }}>
+                <option value="" style={{ background: isDarkMode ? '#101013' : '#ffffff', color: isDarkMode ? '#d4d4d8' : '#475569' }}>
                   Select grade
                 </option>
                 {gradeOptions.map((option) => (
-                  <option key={option} value={option} style={{ background: '#1a1f3a', color: '#fff' }}>
+                  <option key={option} value={option} style={{ background: isDarkMode ? '#101013' : '#ffffff', color: isDarkMode ? '#ffffff' : '#0f172a' }}>
                     {option}
                   </option>
                 ))}
@@ -599,17 +624,19 @@ const Signup = () => {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: 'var(--color-text-secondary)',
-                    fontSize: '1.2rem',
+                    color: textSecondary,
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
                     padding: '0.25rem'
                   }}
                   disabled={isSigningUp}
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? 'HIDE' : 'SHOW'}
                 </button>
               </div>
               <p style={{
-                color: 'rgba(255, 255, 255, 0.65)',
+                color: textSecondary,
                 fontSize: '0.75rem',
                 marginTop: '0',
                 marginBottom: errors.password ? '0.5rem' : '1rem',
@@ -643,13 +670,15 @@ const Signup = () => {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: 'var(--color-text-secondary)',
-                    fontSize: '1.2rem',
+                    color: textSecondary,
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
                     padding: '0.25rem'
                   }}
                   disabled={isSigningUp}
                 >
-                  {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                  {showConfirmPassword ? 'HIDE' : 'SHOW'}
                 </button>
               </div>
               {errors.confirmPassword && <p style={errorStyle}>{errors.confirmPassword}</p>}
@@ -662,8 +691,8 @@ const Signup = () => {
             style={{
               width: '100%',
               padding: isMobile ? '0.9rem' : '1rem',
-              background: isSigningUp ? 'rgba(100, 100, 100, 0.5)' : 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
-              color: 'white',
+              background: isSigningUp ? 'rgba(100, 100, 100, 0.5)' : primaryButtonBackground,
+              color: primaryButtonText,
               border: 'none',
               borderRadius: '12px',
               fontSize: isMobile ? '0.98rem' : '1.05rem',
@@ -672,12 +701,16 @@ const Signup = () => {
               transition: 'all 0.3s ease',
               marginTop: isMobile ? '0.6rem' : '1rem',
               marginBottom: '1.5rem',
-              boxShadow: isSigningUp ? 'none' : '0 8px 20px rgba(0, 212, 255, 0.3)',
+              boxShadow: isSigningUp
+                ? 'none'
+                : isDarkMode
+                  ? '0 8px 20px rgba(0, 0, 0, 0.35)'
+                  : '0 8px 20px rgba(15, 23, 42, 0.2)',
               textTransform: 'none',
               letterSpacing: '0.02em'
             }}
-            onMouseEnter={(e) => !isSigningUp && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 212, 255, 0.4)')}
-            onMouseLeave={(e) => !isSigningUp && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 212, 255, 0.3)')}
+            onMouseEnter={(e) => !isSigningUp && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.background = isDarkMode ? '#ffffff' : '#0b1220')}
+            onMouseLeave={(e) => !isSigningUp && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.background = primaryButtonBackground)}
           >
             {isSigningUp ? 'Creating Account...' : 'Create Account'}
           </button>
@@ -685,16 +718,13 @@ const Signup = () => {
 
         <div style={{ textAlign: 'center' }}>
           <p style={{
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: textSecondary,
             fontSize: '0.9rem',
             marginBottom: '0'
           }}>
             Already have an account?{' '}
             <Link to="/login" style={{
-              background: 'linear-gradient(135deg, #00d4ff 0%, #ec4899 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: textPrimary,
               textDecoration: 'none',
               fontWeight: '700'
             }}>

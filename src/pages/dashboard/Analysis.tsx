@@ -40,7 +40,7 @@ const Analysis = () => {
           mb: 1,
           fontSize: { xs: '1.8rem', sm: '2.15rem', md: '2.8rem' }
         }}>
-          Detailed Analytics 📊
+          Detailed Analytics
         </Typography>
         <Typography variant="h6" sx={{ 
           color: theme.palette.text.secondary,
@@ -111,7 +111,7 @@ const Analysis = () => {
             color: theme.palette.text.secondary,
             mb: 2
           }}>
-            📚 Select a subject above to view detailed analytics
+            Select a subject above to view detailed analytics
           </Typography>
           <Typography variant="body1" sx={{ 
             color: theme.palette.text.disabled

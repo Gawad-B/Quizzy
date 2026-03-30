@@ -3,56 +3,56 @@ import type { ReactNode } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
-// Light theme with clean modern design
+// Professional modern light theme
 const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#00d4ff', // Cyan
-      light: '#33ddff',
-      dark: '#00a8cc',
+      main: '#111827',
+      light: '#374151',
+      dark: '#030712',
     },
     secondary: {
-      main: '#7c3aed', // Purple
-      light: '#9d5eff',
-      dark: '#5b21b6',
+      main: '#475569',
+      light: '#64748b',
+      dark: '#334155',
     },
     success: {
-      main: '#10b981',
-      light: '#34d399',
+      main: '#15803d',
+      light: '#16a34a',
     },
     warning: {
-      main: '#f59e0b',
-      light: '#fbbf24',
+      main: '#b45309',
+      light: '#d97706',
     },
     info: {
-      main: '#00d4ff',
-      light: '#60a5fa',
+      main: '#1d4ed8',
+      light: '#2563eb',
     },
     error: {
-      main: '#ef4444',
-      light: '#f87171',
+      main: '#b91c1c',
+      light: '#dc2626',
     },
     background: {
-      default: '#f8fafc',
+      default: '#f7f7f8',
       paper: '#ffffff',
     },
     text: {
       primary: '#0f172a',
-      secondary: '#475569',
+      secondary: '#334155',
       disabled: '#94a3b8',
     },
-    divider: '#e2e8f0',
+    divider: '#e5e7eb',
     action: {
-      hover: '#f1f5f9',
-      selected: 'rgba(0, 212, 255, 0.08)',
+      hover: '#f3f4f6',
+      selected: 'rgba(17, 24, 39, 0.08)',
     },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #fce7f3 100%)',
+          background: 'radial-gradient(circle at top right, #f1f5f9 0%, #f7f7f8 55%, #ffffff 100%)',
           backgroundAttachment: 'fixed',
           color: '#0f172a',
         },
@@ -62,10 +62,10 @@ const lightTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          backgroundColor: '#ffffff',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(15, 23, 42, 0.08)',
+          boxShadow: '0 8px 30px rgba(15, 23, 42, 0.08)',
         },
       },
     },
@@ -73,30 +73,29 @@ const lightTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          backgroundColor: '#ffffff',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(15, 23, 42, 0.08)',
+          boxShadow: '0 8px 30px rgba(15, 23, 42, 0.08)',
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         contained: {
-          background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
-          boxShadow: '0 4px 12px rgba(0, 212, 255, 0.3)',
+          background: '#111827',
+          boxShadow: '0 8px 20px rgba(15, 23, 42, 0.2)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%)',
-            boxShadow: '0 6px 20px rgba(0, 212, 255, 0.4)',
-            transform: 'translateY(-2px)',
+            background: '#0b1220',
+            boxShadow: '0 12px 28px rgba(15, 23, 42, 0.24)',
           },
         },
         outlined: {
-          borderColor: 'rgba(0, 212, 255, 0.5)',
-          color: '#00d4ff',
+          borderColor: 'rgba(15, 23, 42, 0.2)',
+          color: '#111827',
           '&:hover': {
-            borderColor: '#00d4ff',
-            backgroundColor: 'rgba(0, 212, 255, 0.08)',
+            borderColor: 'rgba(15, 23, 42, 0.45)',
+            backgroundColor: 'rgba(15, 23, 42, 0.05)',
           },
         },
       },
@@ -105,15 +104,15 @@ const lightTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            backgroundColor: '#ffffff',
             '& fieldset': {
-              borderColor: 'rgba(0, 0, 0, 0.1)',
+              borderColor: 'rgba(15, 23, 42, 0.15)',
             },
             '&:hover fieldset': {
-              borderColor: 'rgba(0, 212, 255, 0.5)',
+              borderColor: 'rgba(15, 23, 42, 0.4)',
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#00d4ff',
+              borderColor: '#111827',
             },
           },
         },
@@ -129,58 +128,58 @@ const lightTheme = createTheme({
   },
 });
 
-// Dark theme with futuristic glassmorphism
+// Professional modern dark theme
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#00d4ff', // Cyan
-      light: '#33ddff',
-      dark: '#00a8cc',
+      main: '#f5f5f5',
+      light: '#ffffff',
+      dark: '#d4d4d8',
     },
     secondary: {
-      main: '#7c3aed', // Purple
-      light: '#9d5eff',
-      dark: '#5b21b6',
+      main: '#a1a1aa',
+      light: '#d4d4d8',
+      dark: '#71717a',
     },
     success: {
-      main: '#34d399',
-      light: '#6ee7b7',
+      main: '#4ade80',
+      light: '#86efac',
     },
     warning: {
       main: '#fbbf24',
-      light: '#fcd34d',
+      light: '#fde68a',
     },
     info: {
-      main: '#00d4ff',
-      light: '#60a5fa',
+      main: '#93c5fd',
+      light: '#bfdbfe',
     },
     error: {
-      main: '#ef4444',
-      light: '#f87171',
+      main: '#f87171',
+      light: '#fca5a5',
     },
     background: {
-      default: '#0a0e27', // Dark navy
-      paper: 'rgba(255, 255, 255, 0.05)', // Glassmorphism
+      default: '#0b0b0c',
+      paper: '#131316',
     },
     text: {
-      primary: '#ffffff',
-      secondary: 'rgba(255, 255, 255, 0.7)',
-      disabled: 'rgba(255, 255, 255, 0.5)',
+      primary: '#f4f4f5',
+      secondary: '#d4d4d8',
+      disabled: '#71717a',
     },
-    divider: 'rgba(255, 255, 255, 0.1)',
+    divider: 'rgba(255, 255, 255, 0.12)',
     action: {
-      hover: 'rgba(255, 255, 255, 0.08)',
-      selected: 'rgba(0, 212, 255, 0.16)',
+      hover: 'rgba(255, 255, 255, 0.06)',
+      selected: 'rgba(255, 255, 255, 0.12)',
     },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+          background: 'radial-gradient(circle at top right, #1a1a1f 0%, #0b0b0c 60%, #050506 100%)',
           backgroundAttachment: 'fixed',
-          color: '#ffffff',
+          color: '#f4f4f5',
         },
       },
     },
@@ -188,9 +187,10 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backgroundColor: '#131316',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 10px 32px rgba(0, 0, 0, 0.42)',
         },
       },
     },
@@ -198,29 +198,30 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backgroundColor: '#131316',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 10px 32px rgba(0, 0, 0, 0.42)',
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         contained: {
-          background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
-          boxShadow: '0 8px 20px rgba(0, 212, 255, 0.3)',
+          background: '#f4f4f5',
+          color: '#0b0b0c',
+          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%)',
-            boxShadow: '0 12px 30px rgba(0, 212, 255, 0.4)',
-            transform: 'translateY(-2px)',
+            background: '#ffffff',
+            boxShadow: '0 12px 28px rgba(0, 0, 0, 0.4)',
           },
         },
         outlined: {
-          borderColor: 'rgba(0, 212, 255, 0.5)',
-          color: '#00d4ff',
+          borderColor: 'rgba(255, 255, 255, 0.25)',
+          color: '#f4f4f5',
           '&:hover': {
-            borderColor: '#00d4ff',
-            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+            borderColor: 'rgba(255, 255, 255, 0.45)',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
           },
         },
       },
@@ -229,15 +230,15 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            backgroundColor: '#101013',
             '& fieldset': {
-              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'rgba(255, 255, 255, 0.18)',
             },
             '&:hover fieldset': {
-              borderColor: 'rgba(0, 212, 255, 0.5)',
+              borderColor: 'rgba(255, 255, 255, 0.42)',
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#00d4ff',
+              borderColor: '#f5f5f5',
             },
           },
         },
@@ -310,6 +311,19 @@ export const AppThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => 
     } else {
       root.setAttribute('data-theme', 'light');
     }
+
+    const faviconHref = isDarkMode ? '/vite2.png' : '/vite.png';
+    let favicon = document.getElementById('app-favicon') as HTMLLinkElement | null;
+
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.id = 'app-favicon';
+      favicon.rel = 'icon';
+      favicon.type = 'image/png';
+      document.head.appendChild(favicon);
+    }
+
+    favicon.href = faviconHref;
   }, [isDarkMode]);
 
   const toggleTheme = () => {

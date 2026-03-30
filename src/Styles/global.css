@@ -1,58 +1,59 @@
 :root {
-    /* Primary brand */
-    --color-primary: #4f46e5;   /* Indigo */
-    --color-primary-light: #6366f1;
-    --color-primary-dark: #3730a3;
+  --color-primary: #111827;
+  --color-primary-light: #374151;
+  --color-primary-dark: #030712;
   
     /* Backgrounds */
     --color-bg: #ffffff;
-    --color-bg-secondary: #f9fafb;
-    --color-bg-accent: #f3f4f6;
+    --color-bg-secondary: #f8fafc;
+    --color-bg-accent: #f1f5f9;
   
     /* Text */
-    --color-text: #111827;
-    --color-text-secondary: #4b5563;
-    --color-text-muted: #9ca3af;
+    --color-text: #0f172a;
+    --color-text-secondary: #334155;
+    --color-text-muted: #94a3b8;
   
     /* Cards / Surfaces */
     --color-card-bg: #ffffff;
-    --color-border: #e5e7eb;
+    --color-border: #d1d5db;
   
     /* Status Colors */
-    --color-success: #10b981;   /* green */
-    --color-danger: #ef4444;    /* red */
-    --color-warning: #f59e0b;   /* amber */
-    --color-info: #3b82f6;      /* blue */
+    --color-success: #15803d;
+    --color-danger: #b91c1c;
+    --color-warning: #b45309;
+    --color-info: #1d4ed8;
   
     /* Chart Colors */
-    --color-chart-1: #4f46e5;
-    --color-chart-2: #9ca3af;
-    --color-chart-3: #3b82f6;
+    --color-chart-1: #111827;
+    --color-chart-2: #475569;
+    --color-chart-3: #1d4ed8;
   }
   
-  /* 🌙 Dark Mode */
+  /* Dark Mode */
   [data-theme="dark"] {
-    --color-bg: #111827;
-    --color-bg-secondary: #1f2937;
-    --color-bg-accent: #374151;
+    --color-primary: #f4f4f5;
+    --color-primary-light: #ffffff;
+    --color-primary-dark: #d4d4d8;
+
+    --color-bg: #0b0b0c;
+    --color-bg-secondary: #131316;
+    --color-bg-accent: #1f1f23;
   
-    --color-text: #f9fafb;
-    --color-text-secondary: #d1d5db;
-    --color-text-muted: #9ca3af;
+    --color-text: #f4f4f5;
+    --color-text-secondary: #d4d4d8;
+    --color-text-muted: #a1a1aa;
   
-    --color-card-bg: #1f2937;
-    --color-border: #374151;
+    --color-card-bg: #131316;
+    --color-border: #2e2e33;
   
-    /* Status colors remain, can be tuned */
-    --color-success: #34d399;
+    --color-success: #4ade80;
     --color-danger: #f87171;
     --color-warning: #fbbf24;
-    --color-info: #60a5fa;
+    --color-info: #93c5fd;
   
-    /* Chart Colors */
-    --color-chart-1: #818cf8;
-    --color-chart-2: #6b7280;
-    --color-chart-3: #60a5fa;
+    --color-chart-1: #f4f4f5;
+    --color-chart-2: #a1a1aa;
+    --color-chart-3: #93c5fd;
   }
   
   /* Loading Spinner Animation */

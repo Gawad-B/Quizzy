@@ -170,7 +170,7 @@ const CreateQuiz = () => {
           color: theme.palette.text.primary,
           mb: 1
         }}>
-          Create New Quiz 🧩
+          Create New Quiz
         </Typography>
         <Typography variant="h6" sx={{ 
           color: theme.palette.text.secondary,
@@ -243,11 +243,7 @@ const CreateQuiz = () => {
                 px: 4, 
                 py: 1.5, 
                 borderRadius: 2,
-                minWidth: '120px',
-                bgcolor: theme.palette.success.main,
-                '&:hover': {
-                  bgcolor: theme.palette.success.dark
-                }
+                minWidth: '120px'
               }}
             >
               Generate Quiz

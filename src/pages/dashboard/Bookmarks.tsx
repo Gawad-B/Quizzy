@@ -81,10 +81,18 @@ const Bookmarks = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box className="dashboard-page" sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
       <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+              color: theme.palette.text.primary,
+              fontSize: { xs: '1.75rem', sm: '2.1rem', md: '2.8rem' },
+            }}
+          >
             Bookmarked Questions
           </Typography>
           <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>

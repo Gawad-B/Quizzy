@@ -81,7 +81,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId, perfor
           {data.strongAreas.length === 0 && <Typography variant="body2">No strong areas yet.</Typography>}
           {data.strongAreas.map((area) => (
             <Typography key={area} variant="body2" sx={{ mb: 1 }}>
-              ✅ {area}
+              - {area}
             </Typography>
           ))}
         </Paper>
@@ -94,7 +94,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ subjectId, perfor
           {data.weakAreas.length === 0 && <Typography variant="body2">No weak areas yet.</Typography>}
           {data.weakAreas.map((area) => (
             <Typography key={area} variant="body2" sx={{ mb: 1 }}>
-              ⚠️ {area}
+              - {area}
             </Typography>
           ))}
         </Paper>

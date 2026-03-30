@@ -392,8 +392,8 @@ const Quiz = () => {
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
                 {selectedAnswers[currentQuestion.id] === currentQuestion.correctAnswer 
-                  ? '✅ Correct!' 
-                  : '❌ Incorrect'
+                  ? 'Correct' 
+                  : 'Incorrect'
                 }
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
@@ -414,7 +414,7 @@ const Quiz = () => {
         {/* Notes Section */}
         <Box sx={{ mt: 4, p: 3, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            📝 Take Notes
+            Take Notes
           </Typography>
           <TextField
             fullWidth
@@ -513,7 +513,7 @@ const Quiz = () => {
             color: theme.palette.success.main,
             mb: 3
           }}>
-            🎉 Quiz Completed!
+            Quiz Completed
           </Typography>
           
           <Box sx={{ 
@@ -577,7 +577,7 @@ const Quiz = () => {
           {Object.keys(notes).length > 0 && (
             <Box sx={{ mt: 4, p: 3, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, maxWidth: 800, width: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                📝 Your Notes Summary
+                Your Notes Summary
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {Object.entries(notes).map(([questionId, note]) => (

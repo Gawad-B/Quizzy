@@ -7,6 +7,7 @@ import {
   AllInclusive as AllIcon
 } from '@mui/icons-material';
 import ExamModeCard from './ExamModeCard';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ExamModeSelectorProps {
   examMode: 'solved' | 'new' | 'bookmarked' | 'all';
@@ -14,13 +15,14 @@ interface ExamModeSelectorProps {
 }
 
 const ExamModeSelector: React.FC<ExamModeSelectorProps> = ({ examMode, onExamModeChange }) => {
+  const { theme } = useTheme();
   const examModes = [
     {
       id: 'solved' as const,
       title: 'Previously Solved',
       description: 'Questions you have already attempted and solved',
       icon: <SolvedIcon />,
-      color: '#4caf50',
+      color: theme.palette.success.main,
       benefits: ['Familiar content', 'Review learning', 'Track progress']
     },
     {
@@ -28,7 +30,7 @@ const ExamModeSelector: React.FC<ExamModeSelectorProps> = ({ examMode, onExamMod
       title: 'New Questions',
       description: 'Fresh questions you have never seen before',
       icon: <NewIcon />,
-      color: '#2196f3',
+      color: theme.palette.info.main,
       benefits: ['Challenge yourself', 'Expand knowledge', 'Discover gaps']
     },
     {
@@ -36,7 +38,7 @@ const ExamModeSelector: React.FC<ExamModeSelectorProps> = ({ examMode, onExamMod
       title: 'Bookmarked',
       description: 'Questions you have saved for later practice',
       icon: <BookmarkedIcon />,
-      color: '#ff9800',
+      color: theme.palette.warning.main,
       benefits: ['Focused practice', 'Personal selection', 'Targeted review']
     },
     {
@@ -44,7 +46,7 @@ const ExamModeSelector: React.FC<ExamModeSelectorProps> = ({ examMode, onExamMod
       title: 'Mixed Questions',
       description: 'Combination of all question types for variety',
       icon: <AllIcon />,
-      color: '#9c27b0',
+      color: theme.palette.secondary.main,
       benefits: ['Balanced practice', 'Mixed difficulty', 'Comprehensive review']
     }
   ];

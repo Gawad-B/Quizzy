@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthQuery } from '../../hooks/useAuthQuery';
 import { authAPI } from '../../services/authService';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FormData {
   email: string;
@@ -29,6 +31,7 @@ const Login = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [rememberMe, setRememberMe] = useState(false);
   const [showSignupResendNotice, setShowSignupResendNotice] = useState(false);
+  const { isDarkMode } = useTheme();
   
   const { login, user, isLoggingIn, loginError } = useAuthQuery();
   const navigate = useNavigate();
@@ -125,10 +128,10 @@ const Login = () => {
     }
     
     try {
-      console.log('🚀 Starting login process...');
+      console.log('Starting login process...');
       setResendMessage('');
       const result = await login(formData.email, formData.password);
-      console.log('📋 Login result:', result);
+      console.log('Login result:', result);
       
       if (result.success) {
         if (rememberMe) {
@@ -136,19 +139,35 @@ const Login = () => {
         } else {
           localStorage.removeItem(LAST_AUTH_EMAIL_KEY);
         }
-        console.log('✅ Login successful, redirecting to:', from);
+        console.log('Login successful, redirecting to:', from);
         // The useEffect will handle the redirect when user state updates
       } else {
-        console.log('❌ Login failed:', result.message);
+        console.log('Login failed:', result.message);
         setErrors({ general: result.message || 'Login failed. Please try again.' });
       }
     } catch (error) {
-      console.error('💥 Login error:', error);
+      console.error('Login error:', error);
       setErrors({ general: 'An unexpected error occurred. Please try again.' });
     }
   };
 
   const canResendVerification = (errors.general || '').toLowerCase().includes('verify your email');
+  const shouldShowInfoResend =
+    showSignupResendNotice || /verif(y|ication)/i.test(infoMessage);
+
+  const pageBackground = isDarkMode
+    ? 'radial-gradient(circle at top right, #1a1a1f 0%, #0b0b0c 60%, #050506 100%)'
+    : 'radial-gradient(circle at top right, #f1f5f9 0%, #f7f7f8 55%, #ffffff 100%)';
+  const cardBackground = isDarkMode ? '#131316' : '#ffffff';
+  const cardBorder = isDarkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(15,23,42,0.1)';
+  const textPrimary = isDarkMode ? '#f4f4f5' : '#0f172a';
+  const textSecondary = isDarkMode ? 'rgba(244, 244, 245, 0.72)' : '#475569';
+  const inputBackground = isDarkMode ? '#101013' : '#ffffff';
+  const inputBorder = isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)';
+  const inputFocusBorder = isDarkMode ? 'rgba(255,255,255,0.56)' : 'rgba(15,23,42,0.56)';
+  const primaryButtonBackground = isDarkMode ? '#f4f4f5' : '#111827';
+  const primaryButtonText = isDarkMode ? '#0b0b0c' : '#ffffff';
+  const primaryButtonHover = isDarkMode ? '#ffffff' : '#0b1220';
 
   const handleResendVerification = async () => {
     if (resendCooldown > 0 || isResendingVerification) {
@@ -189,34 +208,46 @@ const Login = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+      background: pageBackground,
       padding: '1rem',
       position: 'fixed',
       top: 0,
       left: 0,
       overflow: 'auto'
     }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 10,
+          borderRadius: '999px',
+          border: cardBorder,
+          background: cardBackground,
+          color: textPrimary,
+        }}
+      >
+        <ThemeToggle size="small" />
+      </div>
+
       <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        background: cardBackground,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: cardBorder,
         borderRadius: '24px',
         padding: '3rem 2.5rem',
         width: '100%',
         maxWidth: '440px',
         margin: '0 auto',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 100px rgba(102, 126, 234, 0.1)',
+        boxShadow: isDarkMode ? '0 20px 60px rgba(0, 0, 0, 0.45)' : '0 20px 60px rgba(15, 23, 42, 0.12)',
         position: 'relative',
         zIndex: 1
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 style={{
-            background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: textPrimary,
             fontSize: '2.5rem',
             fontWeight: '800',
             marginBottom: '0.75rem',
@@ -225,7 +256,7 @@ const Login = () => {
             Login
           </h1>
           <p style={{
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: textSecondary,
             fontSize: '0.95rem',
             margin: 0
           }}>
@@ -252,7 +283,7 @@ const Login = () => {
           {infoMessage && (
             <div style={{
               background: 'rgba(34, 197, 94, 0.2)',
-              color: 'white',
+              color: textPrimary,
               border: '1px solid rgba(34, 197, 94, 0.4)',
               padding: '0.75rem',
               borderRadius: '8px',
@@ -260,7 +291,7 @@ const Login = () => {
               fontSize: '0.875rem'
             }}>
               {infoMessage}
-              {showSignupResendNotice && (
+              {shouldShowInfoResend && (
                 <div style={{ marginTop: '0.55rem' }}>
                   <button
                     type="button"
@@ -270,7 +301,7 @@ const Login = () => {
                       background: 'none',
                       border: 'none',
                       padding: 0,
-                      color: '#93e9ff',
+                      color: isDarkMode ? '#d4d4d8' : '#334155',
                       textDecoration: 'underline',
                       fontSize: '0.85rem',
                       fontWeight: 600,
@@ -292,7 +323,7 @@ const Login = () => {
           <div style={{ marginBottom: '1.5rem' }}>
             <label htmlFor="email" style={{
               display: 'block',
-              color: 'rgba(255, 255, 255, 0.9)',
+              color: textPrimary,
               fontSize: '0.9rem',
               fontWeight: '500',
               marginBottom: '0.6rem'
@@ -308,18 +339,18 @@ const Login = () => {
               style={{
                 width: '100%',
                 padding: '0.875rem 1rem',
-                border: `2px solid ${errors.email ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+                border: `2px solid ${errors.email ? '#ef4444' : inputBorder}`,
                 borderRadius: '12px',
                 fontSize: '1rem',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
+                background: inputBackground,
+                color: textPrimary,
                 transition: 'all 0.3s ease',
                 outline: 'none'
               }}
               placeholder="Enter your email"
               disabled={isLoggingIn}
-              onFocus={(e) => e.target.style.borderColor = 'rgba(0, 212, 255, 0.5)'}
-              onBlur={(e) => e.target.style.borderColor = errors.email ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}
+              onFocus={(e) => e.target.style.borderColor = inputFocusBorder}
+              onBlur={(e) => e.target.style.borderColor = errors.email ? '#ef4444' : inputBorder}
             />
             {errors.email && (
               <p style={{
@@ -337,7 +368,7 @@ const Login = () => {
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
               <label htmlFor="password" style={{
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: textPrimary,
                 fontSize: '0.9rem',
                 fontWeight: '500'
               }}>
@@ -346,7 +377,7 @@ const Login = () => {
               <Link
                 to="/forgot-password"
                 style={{
-                  color: 'rgba(0, 212, 255, 0.8)',
+                  color: textSecondary,
                   fontSize: '0.85rem',
                   textDecoration: 'none',
                   fontWeight: '500'
@@ -366,18 +397,18 @@ const Login = () => {
                   width: '100%',
                   padding: '0.875rem 1rem',
                   paddingRight: '3rem',
-                  border: `2px solid ${errors.password ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+                  border: `2px solid ${errors.password ? '#ef4444' : inputBorder}`,
                   borderRadius: '12px',
                   fontSize: '1rem',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: 'white',
+                  background: inputBackground,
+                  color: textPrimary,
                   transition: 'all 0.3s ease',
                   outline: 'none'
                 }}
                 placeholder="Enter your password"
                 disabled={isLoggingIn}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(0, 212, 255, 0.5)'}
-                onBlur={(e) => e.target.style.borderColor = errors.password ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}
+                onFocus={(e) => e.target.style.borderColor = inputFocusBorder}
+                onBlur={(e) => e.target.style.borderColor = errors.password ? '#ef4444' : inputBorder}
               />
               <button
                 type="button"
@@ -390,13 +421,15 @@ const Login = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: 'var(--color-text-secondary)',
-                  fontSize: '1.2rem',
+                  color: textSecondary,
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
                   padding: '0.25rem'
                 }}
                 disabled={isLoggingIn}
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
+                {showPassword ? 'HIDE' : 'SHOW'}
               </button>
             </div>
             {errors.password && (
@@ -424,11 +457,11 @@ const Login = () => {
                 height: '18px',
                 marginRight: '0.5rem',
                 cursor: 'pointer',
-                accentColor: '#00d4ff'
+                accentColor: isDarkMode ? '#f4f4f5' : '#111827'
               }}
             />
             <label htmlFor="remember" style={{
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: textSecondary,
               fontSize: '0.875rem',
               cursor: 'pointer'
             }}>
@@ -443,8 +476,8 @@ const Login = () => {
             style={{
               width: '100%',
               padding: '1rem',
-              background: isLoggingIn ? 'rgba(100, 100, 100, 0.5)' : 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
-              color: 'white',
+              background: isLoggingIn ? 'rgba(100, 100, 100, 0.5)' : primaryButtonBackground,
+              color: primaryButtonText,
               border: 'none',
               borderRadius: '12px',
               fontSize: '1.05rem',
@@ -452,12 +485,16 @@ const Login = () => {
               cursor: isLoggingIn ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               marginBottom: '1.5rem',
-              boxShadow: isLoggingIn ? 'none' : '0 8px 20px rgba(0, 212, 255, 0.3)',
+              boxShadow: isLoggingIn
+                ? 'none'
+                : isDarkMode
+                  ? '0 8px 20px rgba(0, 0, 0, 0.35)'
+                  : '0 8px 20px rgba(15, 23, 42, 0.2)',
               textTransform: 'none',
               letterSpacing: '0.02em'
             }}
-            onMouseEnter={(e) => !isLoggingIn && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 212, 255, 0.4)')}
-            onMouseLeave={(e) => !isLoggingIn && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 212, 255, 0.3)')}
+            onMouseEnter={(e) => !isLoggingIn && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.background = primaryButtonHover)}
+            onMouseLeave={(e) => !isLoggingIn && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.background = primaryButtonBackground)}
           >
             {isLoggingIn ? 'Logging In...' : 'Log In'}
           </button>
@@ -470,9 +507,9 @@ const Login = () => {
               style={{
                 width: '100%',
                 padding: '0.85rem',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: isDarkMode ? '#1f1f23' : '#f8fafc',
+                color: textPrimary,
+                border: cardBorder,
                 borderRadius: '10px',
                 fontSize: '0.95rem',
                 fontWeight: '600',
@@ -491,7 +528,7 @@ const Login = () => {
           {resendMessage && (
             <div style={{
               background: 'rgba(34, 197, 94, 0.2)',
-              color: 'white',
+              color: textPrimary,
               border: '1px solid rgba(34, 197, 94, 0.4)',
               padding: '0.75rem',
               borderRadius: '8px',
@@ -506,16 +543,13 @@ const Login = () => {
         {/* Footer */}
         <div style={{ textAlign: 'center' }}>
           <p style={{
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: textSecondary,
             fontSize: '0.9rem',
             marginBottom: '0'
           }}>
             Don't have a account{' '}
             <Link to="/signup" style={{
-              background: 'linear-gradient(135deg, #00d4ff 0%, #ec4899 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: textPrimary,
               textDecoration: 'none',
               fontWeight: '700'
             }}>

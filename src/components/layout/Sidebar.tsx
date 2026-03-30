@@ -90,8 +90,7 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
         <SchoolIcon 
           sx={{ 
             fontSize: 32, 
-            color: theme.palette.primary.main,
-            filter: 'drop-shadow(0 2px 8px rgba(0, 212, 255, 0.4))'
+            color: theme.palette.text.primary,
           }} 
         />
         <Typography
@@ -99,10 +98,7 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
           component="h1"
           sx={{
             fontWeight: 800,
-            background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: theme.palette.text.primary,
             letterSpacing: '-0.02em'
           }}
         >
@@ -120,21 +116,21 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
                 mx: 1,
                 borderRadius: 2,
                 background: isActiveRoute(item.path) 
-                  ? 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)'
+                  ? theme.palette.action.selected
                   : 'transparent',
                 color: isActiveRoute(item.path) 
-                  ? 'white' 
+                  ? theme.palette.text.primary
                   : theme.palette.text.primary,
                 boxShadow: isActiveRoute(item.path)
-                  ? '0 4px 12px rgba(0, 212, 255, 0.3)'
+                  ? (isDarkMode ? '0 6px 16px rgba(0, 0, 0, 0.35)' : '0 6px 16px rgba(15, 23, 42, 0.12)')
                   : 'none',
                 '&:hover': {
                   background: isActiveRoute(item.path)
-                    ? 'linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%)'
-                    : 'rgba(0, 212, 255, 0.1)',
+                    ? theme.palette.action.selected
+                    : theme.palette.action.hover,
                   transform: 'translateX(4px)',
                   transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 4px 12px rgba(0, 212, 255, 0.2)'
+                  boxShadow: isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(15, 23, 42, 0.12)'
                 },
                 transition: 'all 0.2s ease-in-out'
               }}
@@ -193,8 +189,8 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
               borderRadius: 2,
               color: theme.palette.error.main,
               '&:hover': {
-                backgroundColor: theme.palette.error.light + '20',
-                color: theme.palette.error.dark
+                backgroundColor: isDarkMode ? 'rgba(248, 113, 113, 0.14)' : 'rgba(220, 38, 38, 0.12)',
+                color: theme.palette.error.main
               },
               transition: 'all 0.2s ease-in-out'
             }}
@@ -267,11 +263,11 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
           position="fixed"
           sx={{
             width: '100%',
-            backgroundColor: isDarkMode ? 'rgba(10, 14, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backgroundColor: isDarkMode ? 'rgba(11, 11, 12, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
             color: theme.palette.text.primary,
-            boxShadow: isDarkMode ? '0 2px 10px rgba(0, 0, 0, 0.3)' : '0 2px 10px rgba(0, 0, 0, 0.08)',
-            borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
+            boxShadow: isDarkMode ? '0 2px 10px rgba(0, 0, 0, 0.35)' : '0 2px 10px rgba(15, 23, 42, 0.08)',
+            borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(15, 23, 42, 0.08)',
             zIndex: theme.zIndex.drawer + 1
           }}
         >
@@ -320,9 +316,9 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
-              backgroundColor: isDarkMode ? 'rgba(10, 14, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              backgroundColor: isDarkMode ? 'rgba(11, 11, 12, 0.95)' : 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
-              borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)'
+              borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(15, 23, 42, 0.08)'
             },
           }}
         >
@@ -343,10 +339,10 @@ const Sidebar: FC<SidebarProps> = ({ open, onToggle }) => {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: isDarkMode ? 'rgba(19, 19, 22, 0.95)' : 'rgba(255, 255, 255, 0.94)',
           backdropFilter: 'blur(20px)',
-          borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: isDarkMode ? '2px 0 20px rgba(0, 0, 0, 0.3)' : '2px 0 20px rgba(0, 0, 0, 0.08)'
+          borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(15, 23, 42, 0.08)',
+          boxShadow: isDarkMode ? '2px 0 20px rgba(0, 0, 0, 0.35)' : '2px 0 20px rgba(15, 23, 42, 0.08)'
         },
       }}
       open

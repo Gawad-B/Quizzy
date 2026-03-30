@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authAPI } from '../../services/authService';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FormErrors {
   email?: string;
@@ -10,10 +12,23 @@ interface FormErrors {
 const LAST_AUTH_EMAIL_KEY = 'quizzy_last_auth_email';
 
 const ForgotPassword = () => {
+  const { isDarkMode } = useTheme();
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  const pageBackground = isDarkMode
+    ? 'radial-gradient(circle at top right, #1a1a1f 0%, #0b0b0c 60%, #050506 100%)'
+    : 'radial-gradient(circle at top right, #f1f5f9 0%, #f7f7f8 55%, #ffffff 100%)';
+  const cardBackground = isDarkMode ? '#131316' : '#ffffff';
+  const cardBorder = isDarkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(15,23,42,0.1)';
+  const textPrimary = isDarkMode ? '#f4f4f5' : '#0f172a';
+  const textSecondary = isDarkMode ? 'rgba(244, 244, 245, 0.72)' : '#475569';
+  const inputBackground = isDarkMode ? '#101013' : '#ffffff';
+  const inputBorder = isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)';
+  const primaryButtonBackground = isDarkMode ? '#f4f4f5' : '#111827';
+  const primaryButtonText = isDarkMode ? '#0b0b0c' : '#ffffff';
 
   const validate = () => {
     const nextErrors: FormErrors = {};
@@ -60,30 +75,42 @@ const ForgotPassword = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
+        background: pageBackground,
         padding: '1rem',
       }}
     >
       <div
         style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          position: 'fixed',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 10,
+          borderRadius: '999px',
+          border: cardBorder,
+          background: cardBackground,
+          color: textPrimary,
+        }}
+      >
+        <ThemeToggle size="small" />
+      </div>
+
+      <div
+        style={{
+          background: cardBackground,
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: cardBorder,
           borderRadius: '24px',
           padding: '2.5rem',
           width: '100%',
           maxWidth: '460px',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
+          boxShadow: isDarkMode ? '0 20px 60px rgba(0, 0, 0, 0.45)' : '0 20px 60px rgba(15, 23, 42, 0.12)',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <h1
             style={{
-              background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: textPrimary,
               fontSize: '2rem',
               fontWeight: 800,
               marginBottom: '0.5rem',
@@ -91,7 +118,7 @@ const ForgotPassword = () => {
           >
             Reset Password
           </h1>
-          <p style={{ color: 'rgba(255, 255, 255, 0.7)', margin: 0 }}>
+          <p style={{ color: textSecondary, margin: 0 }}>
             Enter your account email and we will send a reset link.
           </p>
         </div>
@@ -133,7 +160,7 @@ const ForgotPassword = () => {
               htmlFor="email"
               style={{
                 display: 'block',
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: textPrimary,
                 fontSize: '0.9rem',
                 fontWeight: 500,
                 marginBottom: '0.6rem',
@@ -155,11 +182,11 @@ const ForgotPassword = () => {
               style={{
                 width: '100%',
                 padding: '0.875rem 1rem',
-                border: `2px solid ${errors.email ? '#ef4444' : 'rgba(255, 255, 255, 0.1)'}`,
+                border: `2px solid ${errors.email ? '#ef4444' : inputBorder}`,
                 borderRadius: '12px',
                 fontSize: '1rem',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
+                background: inputBackground,
+                color: textPrimary,
                 outline: 'none',
               }}
               placeholder="Enter your email"
@@ -180,8 +207,8 @@ const ForgotPassword = () => {
               padding: '1rem',
               background: isSubmitting
                 ? 'rgba(100, 100, 100, 0.5)'
-                : 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
-              color: 'white',
+                : primaryButtonBackground,
+              color: primaryButtonText,
               border: 'none',
               borderRadius: '12px',
               fontSize: '1rem',
@@ -198,7 +225,7 @@ const ForgotPassword = () => {
           <Link
             to="/login"
             style={{
-              color: 'rgba(0, 212, 255, 0.9)',
+              color: textPrimary,
               textDecoration: 'none',
               fontWeight: 600,
             }}

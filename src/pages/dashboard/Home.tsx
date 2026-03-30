@@ -64,7 +64,7 @@ const Home = () => {
             mb: 1,
             fontSize: { xs: '1.75rem', sm: '2.1rem', md: '2.8rem' }
           }}>
-            Welcome back, {user?.first_name || 'User'}! 👋
+            Welcome back, {user?.first_name || 'User'}
           </Typography>
           <Typography variant="h6" sx={{
             color: theme.palette.text.secondary,

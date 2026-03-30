@@ -1,33 +1,11 @@
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* Futuristic Dark Mode Color Schema */
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-secondary: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-  --gradient-accent: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-  --gradient-background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%);
-  
-  --brand-navy: #0a0e27;
-  --brand-blue: #00d4ff;
-  --brand-purple: #7c3aed;
-  --brand-pink: #ec4899;
-  --brand-light: #0f1629;
-  --brand-gray-light: #1a1f3a;
-  --brand-gray-medium: #252b4a;
-  --brand-text: #ffffff;
-  --brand-text-secondary: rgba(255, 255, 255, 0.7);
-  --brand-text-muted: rgba(255, 255, 255, 0.5);
-
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-
-  color-scheme: dark;
-  color: var(--brand-text);
-  background: var(--gradient-background);
+  color-scheme: light;
+  color: #0f172a;
+  background: radial-gradient(circle at top right, #f1f5f9 0%, #f7f7f8 55%, #ffffff 100%);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -35,15 +13,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+  color: #f4f4f5;
+  background: radial-gradient(circle at top right, #1a1a1f 0%, #0b0b0c 60%, #050506 100%);
+}
+
 a {
   font-weight: 500;
-  color: var(--brand-blue);
+  color: inherit;
   text-decoration: inherit;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 a:hover {
-  color: var(--brand-purple);
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  opacity: 0.84;
 }
 
 body {
@@ -51,7 +34,7 @@ body {
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--gradient-background);
+  background: inherit;
   background-attachment: fixed;
 }
 
@@ -67,39 +50,25 @@ h1 {
 
 button {
   border-radius: 12px;
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  border: 1px solid rgba(15, 23, 42, 0.18);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 600;
   font-family: inherit;
-  background: var(--gradient-secondary);
-  color: white;
+  background: #111827;
+  color: #ffffff;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+  transition: all 0.22s ease;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22);
 }
 button:hover {
-  background: linear-gradient(135deg, #00a8cc 0%, #5b21b6 100%);
-  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.4);
-  transform: translateY(-2px);
+  background: #0b1220;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
 }
 button:focus,
 button:focus-visible {
-  outline: 2px solid var(--brand-blue);
+  outline: 2px solid rgba(15, 23, 42, 0.4);
   outline-offset: 2px;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }
 
 @keyframes fade-slide-up {
@@ -134,7 +103,7 @@ button:focus-visible {
 
 .cool-filter-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
 }
 
 .history-card {
@@ -144,5 +113,5 @@ button:focus-visible {
 
 .history-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
 }

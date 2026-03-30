@@ -298,33 +298,42 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ details, onDetailsChange }) =
 
       {/* Summary */}
       {details.subject && details.category && details.subcategory && details.quizName && (
-        <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mt: 4, bgcolor: 'success.light' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'success.dark' }}>
+        <Paper
+          elevation={1}
+          sx={{
+            p: 3,
+            borderRadius: 2,
+            mt: 4,
+            bgcolor: 'action.hover',
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
             Quiz Summary
           </Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Typography variant="body2" sx={{ color: 'success.dark' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 <strong>Subject:</strong> {subjectsData[details.subject as keyof typeof subjectsData]?.name}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Typography variant="body2" sx={{ color: 'success.dark' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 <strong>Category:</strong> {details.category}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Typography variant="body2" sx={{ color: 'success.dark' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 <strong>Subcategory:</strong> {details.subcategory}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Typography variant="body2" sx={{ color: 'success.dark' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 <strong>Quiz Name:</strong> {details.quizName}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 12 }}>
-              <Typography variant="body2" sx={{ color: 'success.dark' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 <strong>Questions:</strong> {details.questionCount}
               </Typography>
             </Grid>

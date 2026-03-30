@@ -343,7 +343,7 @@ router.post('/signup', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Account created. Please check your inbox and spam folder for the verification email before logging in.',
+      message: 'Account created. Please check your inbox and spam folder for the verification email before logging in. If you do not receive it, use Resend Verification Email on the login page.',
     });
   } catch (error) {
     console.error(error);

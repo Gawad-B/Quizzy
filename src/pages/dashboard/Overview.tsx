@@ -105,7 +105,7 @@ const Overview = () => {
           mb: 1,
           fontSize: { xs: '1.8rem', sm: '2.15rem', md: '2.8rem' }
         }}>
-          Performance Overview 📊
+          Performance Overview
         </Typography>
         <Typography variant="h6" sx={{ 
           color: theme.palette.text.secondary,
@@ -322,15 +322,16 @@ const Overview = () => {
 
             <Box sx={{ 
               p: 2, 
-              bgcolor: theme.palette.primary.main, 
+              bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.05)',
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.1)'}`,
               borderRadius: 2,
               textAlign: 'center',
-              color: 'white'
+              color: theme.palette.text.primary,
             }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                🎯 Goal Achievement
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: theme.palette.text.primary }}>
+                Goal Achievement
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                 {studentStats.totalQuizzes > 0
                   ? `You completed ${studentStats.totalQuizzes} quizzes so far.`
                   : 'Start your first quiz to unlock detailed insights.'}
