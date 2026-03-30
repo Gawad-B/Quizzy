@@ -39,6 +39,11 @@ const AuthAction = () => {
   const inputBorder = isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.16)';
   const primaryButtonBackground = isDarkMode ? '#f4f4f5' : '#111827';
   const primaryButtonText = isDarkMode ? '#0b0b0c' : '#ffffff';
+  const noticeBackground = isDarkMode ? 'rgba(244, 244, 245, 0.08)' : 'rgba(15, 23, 42, 0.05)';
+  const noticeBorder = isDarkMode ? '1px solid rgba(244, 244, 245, 0.24)' : '1px solid rgba(15, 23, 42, 0.16)';
+  const errorBackground = isDarkMode ? 'rgba(239, 68, 68, 0.16)' : 'rgba(220, 38, 38, 0.12)';
+  const errorBorder = isDarkMode ? '1px solid rgba(248, 113, 113, 0.38)' : '1px solid rgba(220, 38, 38, 0.28)';
+  const errorText = isDarkMode ? '#fecaca' : '#991b1b';
 
   const title = useMemo(() => {
     if (mode === 'verifyEmail') return 'Verify Email';
@@ -199,8 +204,9 @@ const AuthAction = () => {
         {!hasValidAction && (
           <div
             style={{
-              background: 'var(--color-danger)',
-              color: 'white',
+              background: errorBackground,
+              color: errorText,
+              border: errorBorder,
               padding: '0.75rem',
               borderRadius: '8px',
               marginBottom: '1rem',
@@ -214,8 +220,9 @@ const AuthAction = () => {
         {errorMessage && (
           <div
             style={{
-              background: 'var(--color-danger)',
-              color: 'white',
+              background: errorBackground,
+              color: errorText,
+              border: errorBorder,
               padding: '0.75rem',
               borderRadius: '8px',
               marginBottom: '1rem',
@@ -229,9 +236,9 @@ const AuthAction = () => {
         {statusMessage && (
           <div
             style={{
-              background: 'rgba(34, 197, 94, 0.2)',
-              color: 'white',
-              border: '1px solid rgba(34, 197, 94, 0.4)',
+              background: noticeBackground,
+              color: textPrimary,
+              border: noticeBorder,
               padding: '0.75rem',
               borderRadius: '8px',
               marginBottom: '1rem',
