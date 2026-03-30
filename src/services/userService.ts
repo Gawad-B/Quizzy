@@ -31,6 +31,7 @@ export interface OverviewStats {
     score: number;
     date: string;
     questions: number;
+    durationSeconds: number;
     subject: string;
     image?: string;
     status: 'Finished' | 'Unfinished';
@@ -76,6 +77,12 @@ export interface CreateQuizPayload {
 export interface UpdateQuizPayload {
   status?: 'Finished' | 'Unfinished';
   score?: number;
+  durationSeconds?: number;
+  attempts?: Array<{
+    questionId: string;
+    selectedAnswer?: string;
+    timeSpentSeconds?: number;
+  }>;
 }
 
 export interface QuizMutationResponse {

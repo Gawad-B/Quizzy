@@ -227,6 +227,32 @@ async function ensureQuestionInfrastructure() {
   await pool.query('CREATE INDEX IF NOT EXISTS idx_questions_subject_category ON questions(question_bank_id, category, subcategory)');
 }
 
+async function ensureAttemptTimingInfrastructure() {
+  await pool.query(
+    `ALTER TABLE quizzes
+       ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0`
+  );
+
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS user_question_attempts (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+      question_id UUID NOT NULL REFERENCES questions(id) ON DELETE RESTRICT,
+      selected_option_id UUID REFERENCES question_options(id) ON DELETE SET NULL,
+      answer_text TEXT,
+      is_correct BOOLEAN,
+      time_spent_seconds INTEGER CHECK (time_spent_seconds >= 0),
+      attempted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, quiz_id, question_id)
+    )`
+  );
+
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_quiz ON user_question_attempts(user_id, quiz_id)`
+  );
+}
+
 async function ensureQuestionPoolForSubject(subjectId, subjectName) {
   const bankResult = await pool.query(
     `INSERT INTO question_banks (subject_id, title, description)
@@ -658,7 +684,9 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
       return res.status(403).json({ success: false, message: 'Not authorized to update quizzes for this user.' });
     }
 
-    const { status, score } = req.body;
+    await ensureAttemptTimingInfrastructure();
+
+    const { status, score, durationSeconds, attempts } = req.body;
     const updates = [];
     const values = [];
 
@@ -678,6 +706,16 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
       updates.push(`score = $${values.length}`);
     }
 
+    if (durationSeconds !== undefined) {
+      const normalizedDuration = Number(durationSeconds);
+      if (!Number.isFinite(normalizedDuration) || normalizedDuration < 0) {
+        return res.status(400).json({ success: false, message: 'Duration must be a non-negative number of seconds.' });
+      }
+
+      values.push(Math.round(normalizedDuration));
+      updates.push(`duration_seconds = $${values.length}`);
+    }
+
     if (updates.length === 0) {
       return res.status(400).json({ success: false, message: 'No valid fields provided for update.' });
     }
@@ -695,6 +733,72 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
 
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Quiz not found.' });
+    }
+
+    if (Array.isArray(attempts) && attempts.length > 0) {
+      const quizQuestionsResult = await pool.query(
+        `SELECT qq.question_id
+         FROM quiz_questions qq
+         JOIN quizzes qu ON qu.id = qq.quiz_id
+         WHERE qq.quiz_id = $1 AND qu.user_id = $2`,
+        [quizId, targetUserId]
+      );
+
+      const validQuestionIds = new Set(quizQuestionsResult.rows.map((row) => row.question_id));
+
+      for (const attempt of attempts) {
+        const questionId = String(attempt?.questionId || '').trim();
+        if (!questionId || !validQuestionIds.has(questionId)) {
+          continue;
+        }
+
+        const selectedAnswer = String(attempt?.selectedAnswer || '').trim();
+        const rawTimeSpent = Number(attempt?.timeSpentSeconds || 0);
+        const timeSpentSeconds = Number.isFinite(rawTimeSpent) && rawTimeSpent > 0
+          ? Math.round(rawTimeSpent)
+          : 0;
+
+        const optionResult = await pool.query(
+          `SELECT id, is_correct
+           FROM question_options
+           WHERE question_id = $1 AND option_text = $2
+           LIMIT 1`,
+          [questionId, selectedAnswer]
+        );
+
+        const selectedOptionId = optionResult.rows[0]?.id || null;
+        const isCorrect = optionResult.rows[0]?.is_correct ?? null;
+
+        await pool.query(
+          `INSERT INTO user_question_attempts (
+             user_id,
+             quiz_id,
+             question_id,
+             selected_option_id,
+             answer_text,
+             is_correct,
+             time_spent_seconds,
+             attempted_at
+           )
+           VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+           ON CONFLICT (user_id, quiz_id, question_id)
+           DO UPDATE SET
+             selected_option_id = EXCLUDED.selected_option_id,
+             answer_text = EXCLUDED.answer_text,
+             is_correct = EXCLUDED.is_correct,
+             time_spent_seconds = EXCLUDED.time_spent_seconds,
+             attempted_at = CURRENT_TIMESTAMP`,
+          [
+            targetUserId,
+            quizId,
+            questionId,
+            selectedOptionId,
+            selectedAnswer || null,
+            isCorrect,
+            timeSpentSeconds,
+          ]
+        );
+      }
     }
 
     return res.json({ success: true, quiz: result.rows[0] });
@@ -736,6 +840,8 @@ router.get('/:targetId/overview', authenticateToken, async (req, res) => {
   try {
     const targetUserId = getTargetUserId(req);
 
+    await ensureAttemptTimingInfrastructure();
+
     const quizResult = await pool.query(
       `SELECT
          q.id,
@@ -745,6 +851,7 @@ router.get('/:targetId/overview', authenticateToken, async (req, res) => {
          q.status,
          q.date,
          q.created_at,
+         COALESCE(q.duration_seconds, 0) AS duration_seconds,
          COALESCE(s.name, 'General') AS subject,
          COALESCE(q.image_url, s.image_url) AS image
        FROM quizzes q
@@ -768,6 +875,7 @@ router.get('/:targetId/overview', authenticateToken, async (req, res) => {
     const averageScore = finished.length
       ? Number((finished.reduce((sum, q) => sum + Number(q.score || 0), 0) / finished.length).toFixed(1))
       : 0;
+    const totalDurationSeconds = quizzes.reduce((sum, q) => sum + Number(q.duration_seconds || 0), 0);
 
     let currentStreak = 0;
     for (const quiz of quizzes) {
@@ -817,6 +925,7 @@ router.get('/:targetId/overview', authenticateToken, async (req, res) => {
       score: Number(quiz.score || 0),
       date: quiz.date,
       questions: Number(quiz.total_questions || 0),
+      durationSeconds: Number(quiz.duration_seconds || 0),
       subject: quiz.subject,
       image: quiz.image,
       status: quiz.status,
@@ -829,8 +938,10 @@ router.get('/:targetId/overview', authenticateToken, async (req, res) => {
       wrongAnswers,
       partialAnswers,
       averageScore,
-      totalTime: totalQuestions * 2,
-      averageTimePerQuestion: totalQuestions ? Number(((totalQuestions * 2) / totalQuestions).toFixed(1)) : 0,
+      totalTime: Number((totalDurationSeconds / 60).toFixed(1)),
+      averageTimePerQuestion: totalQuestions
+        ? Number(((totalDurationSeconds / totalQuestions) / 60).toFixed(2))
+        : 0,
       currentStreak,
       bestStreak: currentStreak,
       subjects,

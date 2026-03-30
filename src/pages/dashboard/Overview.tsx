@@ -74,9 +74,25 @@ const Overview = () => {
   };
 
   const formatTime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    const totalSeconds = Math.max(0, Math.round(minutes * 60));
+    const hours = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    }
+
+    if (mins > 0) {
+      return `${mins}m ${secs}s`;
+    }
+
+    return `${secs}s`;
+  };
+
+  const formatAverageTimePerQuestion = (minutes: number) => {
+    const seconds = Math.max(0, Math.round(minutes * 60));
+    return `${seconds}s`;
   };
 
   return (
@@ -267,7 +283,7 @@ const Overview = () => {
                 </Typography>
               </Box>
               <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-                {studentStats.averageTimePerQuestion}m
+                {formatAverageTimePerQuestion(studentStats.averageTimePerQuestion)}
               </Typography>
             </Box>
 
@@ -409,7 +425,7 @@ const Overview = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TimeIcon sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
                         <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                          {formatTime(quiz.questions * 2)}
+                          {formatTime((quiz.durationSeconds || 0) / 60)}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

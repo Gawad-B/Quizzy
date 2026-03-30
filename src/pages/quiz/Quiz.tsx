@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, Typography, Paper, Button, RadioGroup, FormControlLabel, Radio, FormControl, Chip, LinearProgress, TextField, Alert, Collapse, CircularProgress } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, CollectionsBookmark as CollectionsBookmarkIcon } from '@mui/icons-material';
@@ -32,6 +32,9 @@ const Quiz = () => {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [showFeedback, setShowFeedback] = useState<Record<string, boolean>>({});
   const [isSavingResult, setIsSavingResult] = useState(false);
+  const [questionTimeSpent, setQuestionTimeSpent] = useState<Record<string, number>>({});
+  const quizStartedAtRef = useRef<number>(Date.now());
+  const questionStartedAtRef = useRef<number>(Date.now());
 
   useEffect(() => {
     const loadQuizQuestions = async () => {
@@ -47,6 +50,9 @@ const Quiz = () => {
       try {
         const response = await userAPI.getQuizQuestions(quizId);
         setQuestions(response.questions || []);
+        quizStartedAtRef.current = Date.now();
+        questionStartedAtRef.current = Date.now();
+        setQuestionTimeSpent({});
       } catch (error) {
         console.error(error);
         setLoadError('Failed to load quiz questions. Please try again.');
@@ -79,7 +85,26 @@ const Quiz = () => {
     }));
   };
 
+  const recordTimeForQuestion = (questionId?: string) => {
+    if (!questionId) {
+      return;
+    }
+
+    const elapsedMs = Date.now() - questionStartedAtRef.current;
+    const elapsedSeconds = Math.max(0, Math.round(elapsedMs / 1000));
+
+    setQuestionTimeSpent((prev) => ({
+      ...prev,
+      [questionId]: (prev[questionId] || 0) + elapsedSeconds,
+    }));
+
+    questionStartedAtRef.current = Date.now();
+  };
+
   const handleQuestionNavigation = (newIndex: number) => {
+    const currentQuestionId = questions[currentQuestionIndex]?.id;
+    recordTimeForQuestion(currentQuestionId);
+
     setCurrentQuestionIndex(newIndex);
     const questionId = questions[newIndex]?.id;
     if (!questionId) {
@@ -95,6 +120,21 @@ const Quiz = () => {
   const handleFinishQuiz = async () => {
     setIsSavingResult(true);
 
+    const currentQuestionId = questions[currentQuestionIndex]?.id;
+    const elapsedMs = Date.now() - questionStartedAtRef.current;
+    const elapsedSecondsForCurrent = Math.max(0, Math.round(elapsedMs / 1000));
+    const finalQuestionTimeSpent = {
+      ...questionTimeSpent,
+      ...(currentQuestionId
+        ? { [currentQuestionId]: (questionTimeSpent[currentQuestionId] || 0) + elapsedSecondsForCurrent }
+        : {}),
+    };
+
+    const totalElapsedSeconds = Math.max(
+      1,
+      Math.round((Date.now() - quizStartedAtRef.current) / 1000)
+    );
+
     const correctAnswersCount = questions.filter((question) => {
       const selectedAnswer = selectedAnswers[question.id];
       return selectedAnswer && selectedAnswer === question.correctAnswer;
@@ -108,6 +148,12 @@ const Quiz = () => {
         await userAPI.updateQuiz(quizId, {
           status: 'Finished',
           score: calculatedScore,
+          durationSeconds: totalElapsedSeconds,
+          attempts: questions.map((question) => ({
+            questionId: question.id,
+            selectedAnswer: selectedAnswers[question.id],
+            timeSpentSeconds: finalQuestionTimeSpent[question.id] || 0,
+          })),
         });
 
         await queryClient.invalidateQueries({ queryKey: ['quizzes', 'me'] });
@@ -319,7 +365,7 @@ const Quiz = () => {
                 sx={{
                   margin: '12px 0',
                   padding: '16px',
-                  border: `2px solid ${selectedAnswers[currentQuestionIndex] === choice 
+                  border: `2px solid ${selectedAnswers[currentQuestion.id] === choice 
                     ? theme.palette.primary.main 
                     : theme.palette.divider}`,
                   borderRadius: 2,
@@ -518,6 +564,9 @@ const Quiz = () => {
               setSelectedAnswers({});
               setShowFeedback({});
               setNotes({});
+              setQuestionTimeSpent({});
+              quizStartedAtRef.current = Date.now();
+              questionStartedAtRef.current = Date.now();
             }}
             sx={{ px: 4, py: 1.5, borderRadius: 2 }}
           >

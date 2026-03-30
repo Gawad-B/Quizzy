@@ -112,6 +112,7 @@ const Signup = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
 
   const gradeOptions = ['High School', 'Undergraduate', 'Postgraduate', 'Diploma', 'Other'];
   const nationalityOptions = [
@@ -152,6 +153,18 @@ const Signup = () => {
       navigate(from, { replace: true });
     }
   }, [user, from, navigate]);
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const isMobile = viewportWidth < 640;
+  const isTablet = viewportWidth >= 640 && viewportWidth < 1024;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name } = e.target;
@@ -296,13 +309,15 @@ const Signup = () => {
       });
 
       if (result.success) {
-        const successMessage = result.message || 'Account created. Please verify your email, then log in.';
+        const successMessage = result.message
+          || 'Account created. Check your inbox and spam folder for the verification email. If it does not arrive, use Resend verification on login.';
         navigate('/login', {
           replace: true,
           state: {
             from: location.state?.from,
             signupSuccess: successMessage,
             prefillEmail: formData.email.trim(),
+            canResendVerification: true,
           },
         });
       } else {
@@ -354,7 +369,7 @@ const Signup = () => {
       alignItems: 'center',
       justifyContent: 'center',
       background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%)',
-      padding: '3rem 1rem',
+      padding: isMobile ? '1rem 0.75rem' : isTablet ? '2rem 1rem' : '3rem 1rem',
       backgroundAttachment: 'fixed'
     }}>
       <div style={{
@@ -362,22 +377,22 @@ const Signup = () => {
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '24px',
-        padding: '3rem 2.5rem',
+        borderRadius: isMobile ? '18px' : '24px',
+        padding: isMobile ? '1.25rem 1rem' : isTablet ? '2rem 1.6rem' : '3rem 2.5rem',
         width: '100%',
         maxWidth: '650px',
-        margin: '2rem auto',
+        margin: isMobile ? '0.5rem auto' : isTablet ? '1rem auto' : '2rem auto',
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 100px rgba(102, 126, 234, 0.1)',
         position: 'relative',
         zIndex: 1
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? '1.2rem' : '2.5rem' }}>
           <h1 style={{
             background: 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            fontSize: '2.5rem',
+            fontSize: isMobile ? '1.8rem' : isTablet ? '2.1rem' : '2.5rem',
             fontWeight: '800',
             marginBottom: '0.75rem',
             letterSpacing: '-0.02em'
@@ -407,7 +422,7 @@ const Signup = () => {
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '0.5rem' : '1rem' }}>
             <div>
               <label htmlFor="first_name" style={labelStyle}>First Name<span style={requiredMarkStyle}>*</span></label>
               <input type="text" id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} style={inputStyle(errors.first_name)} placeholder="First Name" disabled={isSigningUp} />
@@ -426,16 +441,18 @@ const Signup = () => {
             {errors.email && <p style={errorStyle}>{errors.email}</p>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '0.5rem' : '1rem' }}>
             <div>
               <label htmlFor="phone" style={labelStyle}>Phone</label>
               <div style={{
                 display: 'flex',
                 gap: '0.5rem',
-                alignItems: 'center'
+                alignItems: 'center',
+                flexDirection: isMobile ? 'column' : 'row'
               }}>
                 <span style={{
-                  minWidth: '100px',
+                  minWidth: isMobile ? '100%' : '100px',
+                  width: isMobile ? '100%' : 'auto',
                   textAlign: 'center',
                   overflow: 'hidden'
                 }}>
@@ -471,11 +488,11 @@ const Signup = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  style={inputStyle(errors.phone)}
                   placeholder={selectedPhoneRule ? `${selectedPhoneRule.localLength} digits` : 'Phone Number'}
                   maxLength={selectedPhoneRule ? selectedPhoneRule.localLength : 15}
                   inputMode="numeric"
                   disabled={isSigningUp}
+                  style={{ ...inputStyle(errors.phone), marginBottom: isMobile ? 0 : '0.5rem' }}
                 />
               </div>
               <p style={{
@@ -514,7 +531,7 @@ const Signup = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '0.5rem' : '1rem' }}>
             <div>
               <label htmlFor="grade" style={labelStyle}>Grade<span style={requiredMarkStyle}>*</span></label>
               <select
@@ -557,7 +574,7 @@ const Signup = () => {
             {errors.university && <p style={errorStyle}>{errors.university}</p>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '0.5rem' : '1rem' }}>
             <div>
               <label htmlFor="password" style={labelStyle}>Password<span style={requiredMarkStyle}>*</span></label>
               <div style={{ position: 'relative' }}>
@@ -644,16 +661,16 @@ const Signup = () => {
             disabled={isSigningUp}
             style={{
               width: '100%',
-              padding: '1rem',
+              padding: isMobile ? '0.9rem' : '1rem',
               background: isSigningUp ? 'rgba(100, 100, 100, 0.5)' : 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
-              fontSize: '1.05rem',
+              fontSize: isMobile ? '0.98rem' : '1.05rem',
               fontWeight: '700',
               cursor: isSigningUp ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
-              marginTop: '1rem',
+              marginTop: isMobile ? '0.6rem' : '1rem',
               marginBottom: '1.5rem',
               boxShadow: isSigningUp ? 'none' : '0 8px 20px rgba(0, 212, 255, 0.3)',
               textTransform: 'none',

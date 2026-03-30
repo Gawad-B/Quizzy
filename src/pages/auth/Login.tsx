@@ -28,6 +28,7 @@ const Login = () => {
   const [resendMessage, setResendMessage] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showSignupResendNotice, setShowSignupResendNotice] = useState(false);
   
   const { login, user, isLoggingIn, loginError } = useAuthQuery();
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ const Login = () => {
     if (message) {
       setInfoMessage(String(message));
     }
+
+    setShowSignupResendNotice(Boolean(location.state?.canResendVerification));
 
     const prefillEmail = location.state?.prefillEmail;
     if (prefillEmail && typeof prefillEmail === 'string') {
@@ -166,7 +169,7 @@ const Login = () => {
     });
 
     if (result.success) {
-      setResendMessage(result.message || 'Verification email sent. Please check your inbox.');
+      setResendMessage(result.message || 'Verification email sent. Please check your inbox and spam folder.');
       setResendCooldown(60);
     } else {
       setErrors({ general: result.message || 'Unable to resend verification email.' });
@@ -257,29 +260,31 @@ const Login = () => {
               fontSize: '0.875rem'
             }}>
               {infoMessage}
-              <div style={{ marginTop: '0.55rem' }}>
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={isResendingVerification || resendCooldown > 0}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    color: '#93e9ff',
-                    textDecoration: 'underline',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: isResendingVerification || resendCooldown > 0 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {isResendingVerification
-                    ? 'Resending verification...'
-                    : resendCooldown > 0
-                      ? `Resend available in ${resendCooldown}s`
-                      : 'Resend verification email'}
-                </button>
-              </div>
+              {showSignupResendNotice && (
+                <div style={{ marginTop: '0.55rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResendingVerification || resendCooldown > 0}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: '#93e9ff',
+                      textDecoration: 'underline',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      cursor: isResendingVerification || resendCooldown > 0 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    {isResendingVerification
+                      ? 'Resending verification...'
+                      : resendCooldown > 0
+                        ? `Resend available in ${resendCooldown}s`
+                        : 'Resend verification email'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
