@@ -9,12 +9,14 @@ import {
   Avatar,
   Pagination,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useQuery } from '@tanstack/react-query';
 import { userAPI } from '../../services/userService';
 
 const History = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Finished' | 'Unfinished'>('All');
   const [currentPage, setCurrentPage] = useState(1);
@@ -135,11 +137,20 @@ const History = () => {
                 </Box>
 
                 {quiz.status === 'Finished' ? (
-                  <Chip
-                    label={`${quiz.score}% (${quiz.totalQuestions} Q)`}
-                    color={quiz.score >= 70 ? 'success' : 'warning'}
-                    sx={{ fontWeight: 600, alignSelf: { xs: 'flex-start', sm: 'center' } }}
-                  />
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', alignSelf: { xs: 'flex-start', sm: 'center' } }}>
+                    <Chip
+                      label={`${quiz.score}% (${quiz.totalQuestions} Q)`}
+                      color={quiz.score >= 70 ? 'success' : 'warning'}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => navigate(`/history/${quiz.id}`)}
+                    >
+                      Review
+                    </Button>
+                  </Box>
                 ) : (
                   <Chip label="Unfinished" color="default" sx={{ fontWeight: 600, alignSelf: { xs: 'flex-start', sm: 'center' } }} />
                 )}

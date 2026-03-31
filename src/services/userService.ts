@@ -115,6 +115,25 @@ export interface QuizQuestionsResponse {
   questions: QuizQuestion[];
 }
 
+export interface QuizReviewQuestion {
+  id: string;
+  question: string;
+  choices: string[];
+  correctAnswer: string | null;
+  selectedAnswer: string | null;
+  isCorrect: boolean | null;
+  explanation?: string | null;
+  category?: string | null;
+  subcategory?: string | null;
+  timeSpentSeconds: number;
+}
+
+export interface QuizReviewResponse {
+  success: boolean;
+  quiz: QuizHistoryItem;
+  questions: QuizReviewQuestion[];
+}
+
 export interface BookmarkResponse {
   success: boolean;
   bookmarked?: boolean;
@@ -170,6 +189,10 @@ export const userAPI = {
 
   getQuizQuestions: async (quizId: string, userId: string = 'me'): Promise<QuizQuestionsResponse> => {
     return http<QuizQuestionsResponse>(`/api/users/${userId}/quizzes/${quizId}/questions`);
+  },
+
+  getQuizReview: async (quizId: string, userId: string = 'me'): Promise<QuizReviewResponse> => {
+    return http<QuizReviewResponse>(`/api/users/${userId}/quizzes/${quizId}/review`);
   },
 
   setQuestionBookmark: async (

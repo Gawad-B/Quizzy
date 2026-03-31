@@ -596,6 +596,110 @@ router.get('/:targetId/quizzes/:quizId/questions', authenticateToken, async (req
   }
 });
 
+router.get('/:targetId/quizzes/:quizId/review', authenticateToken, async (req, res) => {
+  try {
+    const targetUserId = getTargetUserId(req);
+    const { quizId } = req.params;
+
+    const quizResult = await pool.query(
+      `SELECT
+         q.id,
+         q.title,
+         q.score,
+         q.total_questions AS "totalQuestions",
+         q.status,
+         q.date,
+         COALESCE(q.image_url, s.image_url) AS image,
+         COALESCE(s.name, 'General') AS subject
+       FROM quizzes q
+       LEFT JOIN subjects s ON s.id = q.subject_id
+       WHERE q.id = $1 AND q.user_id = $2
+       LIMIT 1`,
+      [quizId, targetUserId]
+    );
+
+    if (quizResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Quiz not found.' });
+    }
+
+    const questionRowsResult = await pool.query(
+      `SELECT
+         qq.question_order,
+         q.id,
+         q.question_text AS question,
+         q.explanation,
+         q.category,
+         q.subcategory,
+         uqa.answer_text AS selected_answer,
+         uqa.is_correct,
+         COALESCE(uqa.time_spent_seconds, 0) AS time_spent_seconds
+       FROM quiz_questions qq
+       JOIN quizzes qu ON qu.id = qq.quiz_id
+       JOIN questions q ON q.id = qq.question_id
+       LEFT JOIN user_question_attempts uqa
+         ON uqa.quiz_id = qq.quiz_id
+        AND uqa.question_id = qq.question_id
+        AND uqa.user_id = $2
+       WHERE qq.quiz_id = $1 AND qu.user_id = $2
+       ORDER BY qq.question_order ASC`,
+      [quizId, targetUserId]
+    );
+
+    const questionRows = questionRowsResult.rows;
+
+    if (questionRows.length === 0) {
+      return res.json({ success: true, quiz: quizResult.rows[0], questions: [] });
+    }
+
+    const questionIds = questionRows.map((row) => row.id);
+    const optionsResult = await pool.query(
+      `SELECT
+         qo.question_id,
+         qo.option_text,
+         qo.is_correct,
+         qo.option_order
+       FROM question_options qo
+       WHERE qo.question_id = ANY($1::uuid[])
+       ORDER BY qo.question_id, qo.option_order ASC`,
+      [questionIds]
+    );
+
+    const optionsByQuestion = new Map();
+    for (const optionRow of optionsResult.rows) {
+      const existing = optionsByQuestion.get(optionRow.question_id) || [];
+      existing.push(optionRow);
+      optionsByQuestion.set(optionRow.question_id, existing);
+    }
+
+    const reviewQuestions = questionRows.map((row) => {
+      const options = optionsByQuestion.get(row.id) || [];
+      const correctOption = options.find((option) => option.is_correct);
+
+      return {
+        id: row.id,
+        question: row.question,
+        choices: options.map((option) => option.option_text),
+        correctAnswer: correctOption?.option_text || null,
+        selectedAnswer: row.selected_answer || null,
+        isCorrect: row.is_correct,
+        explanation: row.explanation,
+        category: row.category,
+        subcategory: row.subcategory,
+        timeSpentSeconds: Number(row.time_spent_seconds || 0),
+      };
+    });
+
+    return res.json({
+      success: true,
+      quiz: quizResult.rows[0],
+      questions: reviewQuestions,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch quiz review.' });
+  }
+});
+
 router.post('/:targetId/questions/:questionId/bookmark', authenticateToken, async (req, res) => {
   try {
     const targetUserId = getTargetUserId(req);

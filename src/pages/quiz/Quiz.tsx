@@ -30,7 +30,6 @@ const Quiz = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [notes, setNotes] = useState<Record<string, string>>({});
-  const [showFeedback, setShowFeedback] = useState<Record<string, boolean>>({});
   const [isSavingResult, setIsSavingResult] = useState(false);
   const [questionTimeSpent, setQuestionTimeSpent] = useState<Record<string, number>>({});
   const quizStartedAtRef = useRef<number>(Date.now());
@@ -74,14 +73,13 @@ const Quiz = () => {
       return;
     }
 
+    if (selectedAnswers[questionId]) {
+      return;
+    }
+
     setSelectedAnswers(prev => ({
       ...prev,
       [questionId]: answer
-    }));
-
-    setShowFeedback(prev => ({
-      ...prev,
-      [questionId]: true
     }));
   };
 
@@ -106,15 +104,6 @@ const Quiz = () => {
     recordTimeForQuestion(currentQuestionId);
 
     setCurrentQuestionIndex(newIndex);
-    const questionId = questions[newIndex]?.id;
-    if (!questionId) {
-      return;
-    }
-
-    setShowFeedback(prev => ({
-      ...prev,
-      [questionId]: false
-    }));
   };
 
   const handleFinishQuiz = async () => {
@@ -229,6 +218,23 @@ const Quiz = () => {
       </Box>
     );
   }
+
+  if (!currentQuestion) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Unable to display this quiz question. Please restart the quiz.
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/create-quiz')}>
+          Back to Create Quiz
+        </Button>
+      </Box>
+    );
+  }
+
+  const currentAnswer = selectedAnswers[currentQuestion.id];
+  const isCurrentQuestionAnswered = Boolean(currentAnswer);
+  const isCurrentQuestionCorrect = isCurrentQuestionAnswered && currentAnswer === currentQuestion.correctAnswer;
 
   return (
     <Box sx={{ 
@@ -349,10 +355,17 @@ const Quiz = () => {
             value={selectedAnswers[currentQuestion.id] || ''}
             onChange={(e) => handleAnswerSelect(e.target.value)}
           >
-            {currentQuestion.choices.map((choice, index) => (
+            {currentQuestion.choices.map((choice, index) => {
+                const isSelected = selectedAnswers[currentQuestion.id] === choice;
+                const isCorrectChoice = choice === currentQuestion.correctAnswer;
+                const showCorrectState = isCurrentQuestionAnswered && isCorrectChoice;
+                const showWrongState = isCurrentQuestionAnswered && isSelected && !isCorrectChoice;
+
+                return (
               <FormControlLabel
                 key={index}
                 value={choice}
+                disabled={isCurrentQuestionAnswered}
                 control={<Radio />}
                 label={
                   <Typography variant="body1" sx={{ 
@@ -365,41 +378,50 @@ const Quiz = () => {
                 sx={{
                   margin: '12px 0',
                   padding: '16px',
-                  border: `2px solid ${selectedAnswers[currentQuestion.id] === choice 
-                    ? theme.palette.primary.main 
-                    : theme.palette.divider}`,
+                  border: `2px solid ${showCorrectState
+                    ? theme.palette.success.main
+                    : showWrongState
+                      ? theme.palette.error.main
+                      : isSelected
+                        ? theme.palette.primary.main
+                        : theme.palette.divider}`,
                   borderRadius: 2,
-                  backgroundColor: selectedAnswers[currentQuestion.id] === choice 
-                    ? `${theme.palette.primary.main}10` 
-                    : 'transparent',
+                  backgroundColor: showCorrectState
+                    ? `${theme.palette.success.main}15`
+                    : showWrongState
+                      ? `${theme.palette.error.main}15`
+                      : isSelected
+                        ? `${theme.palette.primary.main}10`
+                        : 'transparent',
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    backgroundColor: `${theme.palette.primary.main}05`
+                    borderColor: isCurrentQuestionAnswered ? undefined : theme.palette.primary.main,
+                    backgroundColor: isCurrentQuestionAnswered ? undefined : `${theme.palette.primary.main}05`
                   }
                 }}
               />
-            ))}
+                );
+              })}
           </RadioGroup>
         </FormControl>
 
         {/* Answer Feedback */}
-        {showFeedback[currentQuestion.id] && selectedAnswers[currentQuestion.id] && (
-          <Collapse in={showFeedback[currentQuestion.id]} timeout={300}>
+        {isCurrentQuestionAnswered && (
+          <Collapse in={isCurrentQuestionAnswered} timeout={300}>
             <Alert 
-              severity={selectedAnswers[currentQuestion.id] === currentQuestion.correctAnswer ? 'success' : 'error'}
+              severity={isCurrentQuestionCorrect ? 'success' : 'error'}
               sx={{ mt: 3, mb: 3 }}
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
-                {selectedAnswers[currentQuestion.id] === currentQuestion.correctAnswer 
+                {isCurrentQuestionCorrect
                   ? 'Correct' 
                   : 'Incorrect'
                 }
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                <strong>Your Answer:</strong> {selectedAnswers[currentQuestion.id]}
+                <strong>Your Answer:</strong> {currentAnswer}
               </Typography>
-              {selectedAnswers[currentQuestion.id] !== currentQuestion.correctAnswer && (
+              {!isCurrentQuestionCorrect && (
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   <strong>Correct Answer:</strong> {currentQuestion.correctAnswer}
                 </Typography>
@@ -562,7 +584,6 @@ const Quiz = () => {
               setQuizCompleted(false);
               setCurrentQuestionIndex(0);
               setSelectedAnswers({});
-              setShowFeedback({});
               setNotes({});
               setQuestionTimeSpent({});
               quizStartedAtRef.current = Date.now();
