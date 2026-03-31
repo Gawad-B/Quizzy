@@ -34,7 +34,7 @@ export interface OverviewStats {
     durationSeconds: number;
     subject: string;
     image?: string;
-    status: 'Finished' | 'Unfinished';
+    status: 'Finished' | 'Unfinished' | 'Timed Out';
   }>;
 }
 
@@ -69,13 +69,15 @@ export interface CreateQuizPayload {
   examMode?: 'solved' | 'new' | 'bookmarked' | 'all';
   category?: string;
   subcategory?: string;
-  status?: 'Finished' | 'Unfinished';
+  status?: 'Finished' | 'Unfinished' | 'Timed Out';
   score?: number;
+  isTimed?: boolean;
+  timeLimitMinutes?: number;
   date?: string;
 }
 
 export interface UpdateQuizPayload {
-  status?: 'Finished' | 'Unfinished';
+  status?: 'Finished' | 'Unfinished' | 'Timed Out';
   score?: number;
   durationSeconds?: number;
   attempts?: Array<{
@@ -92,7 +94,9 @@ export interface QuizMutationResponse {
     title: string;
     score: number;
     totalQuestions: number;
-    status: 'Finished' | 'Unfinished';
+    status: 'Finished' | 'Unfinished' | 'Timed Out';
+    isTimed?: boolean;
+    timeLimitSeconds?: number | null;
     date: string;
   };
   message?: string;
@@ -112,6 +116,10 @@ export interface QuizQuestion {
 
 export interface QuizQuestionsResponse {
   success: boolean;
+  quiz?: {
+    isTimed: boolean;
+    timeLimitSeconds: number | null;
+  };
   questions: QuizQuestion[];
 }
 

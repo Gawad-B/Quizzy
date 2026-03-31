@@ -82,6 +82,8 @@ const CreateQuiz = () => {
         subcategory: quizData.details.subcategory,
         status: 'Unfinished',
         score: 0,
+        isTimed: quizData.settings.isTimed,
+        timeLimitMinutes: quizData.settings.isTimed ? (quizData.settings.timeLimit || 30) : undefined,
       });
 
       if (!response.success || !response.quiz?.id) {
@@ -99,6 +101,8 @@ const CreateQuiz = () => {
           category: quizData.details.category,
           subcategory: quizData.details.subcategory,
           quizName: quizData.details.quizName,
+          isTimed: quizData.settings.isTimed,
+          timeLimitMinutes: quizData.settings.timeLimit || 30,
         },
       });
     } catch (error) {

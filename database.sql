@@ -37,7 +37,10 @@ CREATE TABLE IF NOT EXISTS quizzes (
     title VARCHAR(255) NOT NULL,
     score INTEGER DEFAULT 0,
     total_questions INTEGER NOT NULL,
-    status VARCHAR(50) DEFAULT 'Unfinished' CHECK (status IN ('Finished', 'Unfinished')),
+    status VARCHAR(50) DEFAULT 'Unfinished' CHECK (status IN ('Finished', 'Unfinished', 'Timed Out')),
+    is_timed BOOLEAN DEFAULT FALSE,
+    time_limit_seconds INTEGER CHECK (time_limit_seconds IS NULL OR time_limit_seconds > 0),
+    duration_seconds INTEGER DEFAULT 0,
     image_url TEXT,
     date DATE DEFAULT CURRENT_DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

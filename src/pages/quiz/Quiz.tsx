@@ -1,8 +1,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Box, Typography, Paper, Button, RadioGroup, FormControlLabel, Radio, FormControl, Chip, LinearProgress, TextField, Alert, Collapse, CircularProgress } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, CollectionsBookmark as CollectionsBookmarkIcon } from '@mui/icons-material';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowBack as ArrowBackIcon, CheckCircle as CheckIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, CollectionsBookmark as CollectionsBookmarkIcon, AccessTime as AccessTimeIcon } from '@mui/icons-material';
 import { useTheme } from '../../context/ThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { userAPI } from '../../services/userService';
@@ -10,8 +10,10 @@ import { userAPI } from '../../services/userService';
 const Quiz = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme } = useTheme();
   const queryClient = useQueryClient();
+  const locationState = (location.state as { isTimed?: boolean; timeLimitMinutes?: number } | null) ?? null;
 
   const [questions, setQuestions] = useState<Array<{
     id: string;
@@ -31,9 +33,15 @@ const Quiz = () => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [isSavingResult, setIsSavingResult] = useState(false);
+  const [isTimedQuiz, setIsTimedQuiz] = useState(false);
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+  const [didTimeout, setDidTimeout] = useState(false);
+  const [isInteractionLocked, setIsInteractionLocked] = useState(false);
   const [questionTimeSpent, setQuestionTimeSpent] = useState<Record<string, number>>({});
   const quizStartedAtRef = useRef<number>(Date.now());
   const questionStartedAtRef = useRef<number>(Date.now());
+  const autoSubmitTriggeredRef = useRef(false);
 
   useEffect(() => {
     const loadQuizQuestions = async () => {
@@ -49,6 +57,25 @@ const Quiz = () => {
       try {
         const response = await userAPI.getQuizQuestions(quizId);
         setQuestions(response.questions || []);
+
+        const backendTimed = Boolean(response.quiz?.isTimed);
+        const backendTimeLimitSeconds = response.quiz?.timeLimitSeconds ?? null;
+        const fallbackTimed = Boolean(locationState?.isTimed);
+        const fallbackTimeLimitSeconds = locationState?.timeLimitMinutes
+          ? Math.round(locationState.timeLimitMinutes * 60)
+          : null;
+        const resolvedIsTimed = backendTimed || fallbackTimed;
+        const resolvedTimeLimitSeconds = resolvedIsTimed
+          ? (backendTimeLimitSeconds ?? fallbackTimeLimitSeconds ?? 30 * 60)
+          : null;
+
+        setIsTimedQuiz(resolvedIsTimed);
+        setTimeLimitSeconds(resolvedTimeLimitSeconds);
+        setSecondsRemaining(resolvedTimeLimitSeconds);
+        setDidTimeout(false);
+        setIsInteractionLocked(false);
+        autoSubmitTriggeredRef.current = false;
+
         quizStartedAtRef.current = Date.now();
         questionStartedAtRef.current = Date.now();
         setQuestionTimeSpent({});
@@ -61,13 +88,24 @@ const Quiz = () => {
     };
 
     void loadQuizQuestions();
-  }, [quizId]);
+  }, [quizId, locationState?.isTimed, locationState?.timeLimitMinutes]);
+
+  const formatRemainingTime = (totalSeconds: number) => {
+    const safeTotal = Math.max(0, totalSeconds);
+    const minutes = Math.floor(safeTotal / 60);
+    const seconds = safeTotal % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
 
   const handleBackToDashboard = () => {
     navigate('/create-quiz');
   };
 
   const handleAnswerSelect = (answer: string) => {
+    if (isInteractionLocked || didTimeout) {
+      return;
+    }
+
     const questionId = questions[currentQuestionIndex]?.id;
     if (!questionId) {
       return;
@@ -100,13 +138,22 @@ const Quiz = () => {
   };
 
   const handleQuestionNavigation = (newIndex: number) => {
+    if (isInteractionLocked || didTimeout) {
+      return;
+    }
+
     const currentQuestionId = questions[currentQuestionIndex]?.id;
     recordTimeForQuestion(currentQuestionId);
 
     setCurrentQuestionIndex(newIndex);
   };
 
-  const handleFinishQuiz = async () => {
+  const handleFinishQuiz = async (timedOut = false) => {
+    if (isSavingResult || quizCompleted) {
+      return;
+    }
+
+    setIsInteractionLocked(true);
     setIsSavingResult(true);
 
     const currentQuestionId = questions[currentQuestionIndex]?.id;
@@ -135,7 +182,7 @@ const Quiz = () => {
     try {
       if (quizId) {
         await userAPI.updateQuiz(quizId, {
-          status: 'Finished',
+          status: timedOut ? 'Timed Out' : 'Finished',
           score: calculatedScore,
           durationSeconds: totalElapsedSeconds,
           attempts: questions.map((question) => ({
@@ -159,6 +206,10 @@ const Quiz = () => {
   };
 
   const handleNoteChange = (note: string) => {
+    if (isInteractionLocked || didTimeout) {
+      return;
+    }
+
     const questionId = questions[currentQuestionIndex]?.id;
     if (!questionId) {
       return;
@@ -171,6 +222,10 @@ const Quiz = () => {
   };
 
   const toggleBookmark = async () => {
+    if (isInteractionLocked || didTimeout) {
+      return;
+    }
+
     const question = questions[currentQuestionIndex];
     if (!question) {
       return;
@@ -196,6 +251,47 @@ const Quiz = () => {
     ? ((currentQuestionIndex + 1) / questions.length) * 100
     : 0;
   const answeredQuestions = Object.keys(selectedAnswers).length;
+
+  useEffect(() => {
+    if (!isTimedQuiz || quizCompleted || isSavingResult || isLoadingQuestions || !questions.length) {
+      return;
+    }
+
+    if (secondsRemaining === null) {
+      return;
+    }
+
+    if (secondsRemaining <= 0) {
+      if (!autoSubmitTriggeredRef.current) {
+        autoSubmitTriggeredRef.current = true;
+        setDidTimeout(true);
+        setIsInteractionLocked(true);
+        void handleFinishQuiz(true);
+      }
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev === null) {
+          return prev;
+        }
+
+        return Math.max(0, prev - 1);
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [
+    isTimedQuiz,
+    quizCompleted,
+    isSavingResult,
+    isLoadingQuestions,
+    questions.length,
+    secondsRemaining,
+  ]);
 
   if (isLoadingQuestions) {
     return (
@@ -286,6 +382,18 @@ const Quiz = () => {
         borderBottom: `1px solid ${theme.palette.divider}`,
         backgroundColor: theme.palette.background.paper
       }}>
+        {isTimedQuiz && secondsRemaining !== null && !quizCompleted && (
+          <Alert
+            icon={<AccessTimeIcon />}
+            severity={secondsRemaining <= 60 ? 'error' : secondsRemaining <= 300 ? 'warning' : 'info'}
+            sx={{ mb: 2 }}
+          >
+            <Typography sx={{ fontWeight: 700 }}>
+              Time Left: {formatRemainingTime(secondsRemaining)}
+            </Typography>
+          </Alert>
+        )}
+
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             Question {currentQuestionIndex + 1} of {questions.length}
@@ -304,6 +412,13 @@ const Quiz = () => {
                 size="small"
               />
             )}
+              {isTimedQuiz && timeLimitSeconds && (
+                <Chip
+                  label={`Timed: ${Math.round(timeLimitSeconds / 60)} min`}
+                  color="warning"
+                  variant="outlined"
+                />
+              )}
           </Box>
         </Box>
         <LinearProgress 
@@ -365,7 +480,7 @@ const Quiz = () => {
               <FormControlLabel
                 key={index}
                 value={choice}
-                disabled={isCurrentQuestionAnswered}
+                disabled={isCurrentQuestionAnswered || isInteractionLocked}
                 control={<Radio />}
                 label={
                   <Typography variant="body1" sx={{ 
@@ -445,6 +560,7 @@ const Quiz = () => {
             placeholder="Write your notes, thoughts, or key points about this question..."
             value={notes[currentQuestion.id] || ''}
             onChange={(e) => handleNoteChange(e.target.value)}
+            disabled={isInteractionLocked}
             variant="outlined"
             sx={{
               '& .MuiOutlinedInput-root': {
@@ -479,7 +595,7 @@ const Quiz = () => {
             <Button
               variant="outlined"
               onClick={() => handleQuestionNavigation(currentQuestionIndex - 1)}
-              disabled={currentQuestionIndex === 0}
+              disabled={currentQuestionIndex === 0 || isInteractionLocked}
               sx={{ px: 4, py: 1.5, borderRadius: 2 }}
             >
               Previous
@@ -490,7 +606,7 @@ const Quiz = () => {
                 <Button
                   variant="contained"
                   onClick={() => handleQuestionNavigation(currentQuestionIndex + 1)}
-                  disabled={!selectedAnswers[currentQuestion.id]}
+                  disabled={!selectedAnswers[currentQuestion.id] || isInteractionLocked}
                   sx={{ px: 4, py: 1.5, borderRadius: 2 }}
                 >
                   Next Question
@@ -499,7 +615,7 @@ const Quiz = () => {
                 <Button
                   variant="contained"
                   onClick={handleFinishQuiz}
-                  disabled={answeredQuestions < questions.length || isSavingResult}
+                  disabled={answeredQuestions < questions.length || isSavingResult || isInteractionLocked}
                   sx={{ 
                     px: 4, 
                     py: 1.5, 
@@ -532,11 +648,17 @@ const Quiz = () => {
         }}>
           <Typography variant="h4" sx={{ 
             fontWeight: 700, 
-            color: theme.palette.success.main,
+            color: didTimeout ? theme.palette.error.main : theme.palette.success.main,
             mb: 3
           }}>
-            Quiz Completed
+            {didTimeout ? 'Quiz Timed Out' : 'Quiz Completed'}
           </Typography>
+
+          {didTimeout && (
+            <Alert severity="error" sx={{ mb: 3, width: '100%', maxWidth: 600 }}>
+              Time expired. Unanswered questions were marked as wrong and this attempt was saved as Timed Out.
+            </Alert>
+          )}
           
           <Box sx={{ 
             p: 4, 
@@ -576,6 +698,12 @@ const Quiz = () => {
                 </Typography>
               </Box>
             </Box>
+
+            {didTimeout && (
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                Unanswered: {questions.length - answeredQuestions}
+              </Typography>
+            )}
           </Box>
 
           <Button
@@ -586,6 +714,10 @@ const Quiz = () => {
               setSelectedAnswers({});
               setNotes({});
               setQuestionTimeSpent({});
+              setDidTimeout(false);
+              setIsInteractionLocked(false);
+              autoSubmitTriggeredRef.current = false;
+              setSecondsRemaining(isTimedQuiz ? timeLimitSeconds : null);
               quizStartedAtRef.current = Date.now();
               questionStartedAtRef.current = Date.now();
             }}

@@ -18,7 +18,7 @@ const History = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'All' | 'Finished' | 'Unfinished'>('All');
+  const [activeTab, setActiveTab] = useState<'All' | 'Finished' | 'Unfinished' | 'Timed Out'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -45,7 +45,7 @@ const History = () => {
     currentPage * itemsPerPage
   );
 
-  const handleTabChange = (value: 'All' | 'Finished' | 'Unfinished') => {
+  const handleTabChange = (value: 'All' | 'Finished' | 'Unfinished' | 'Timed Out') => {
     setActiveTab(value);
     setCurrentPage(1);
   };
@@ -78,7 +78,7 @@ const History = () => {
           />
 
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' } }}>
-            {(['All', 'Finished', 'Unfinished'] as const).map((tab) => (
+            {(['All', 'Finished', 'Unfinished', 'Timed Out'] as const).map((tab) => (
               <Button
                 key={tab}
                 onClick={() => handleTabChange(tab)}
@@ -86,7 +86,7 @@ const History = () => {
                 size="small"
                 className="cool-filter-btn"
                 sx={{
-                  minWidth: { xs: 'calc(33.33% - 8px)', sm: 96 },
+                  minWidth: { xs: 'calc(50% - 8px)', sm: 96 },
                   borderRadius: 2,
                   textTransform: 'none',
                   fontWeight: 600,
@@ -136,11 +136,11 @@ const History = () => {
                   </Typography>
                 </Box>
 
-                {quiz.status === 'Finished' ? (
+                {quiz.status === 'Finished' || quiz.status === 'Timed Out' ? (
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', alignSelf: { xs: 'flex-start', sm: 'center' } }}>
                     <Chip
-                      label={`${quiz.score}% (${quiz.totalQuestions} Q)`}
-                      color={quiz.score >= 70 ? 'success' : 'warning'}
+                      label={quiz.status === 'Timed Out' ? `Timed Out • ${quiz.score}% (${quiz.totalQuestions} Q)` : `${quiz.score}% (${quiz.totalQuestions} Q)`}
+                      color={quiz.status === 'Timed Out' ? 'error' : (quiz.score >= 70 ? 'success' : 'warning')}
                       sx={{ fontWeight: 600 }}
                     />
                     <Button

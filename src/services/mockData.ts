@@ -46,7 +46,7 @@ export interface Quiz {
     date: string;
     score: number;
     totalQuestions: number;
-    status: 'Finished' | 'Unfinished';
+    status: 'Finished' | 'Unfinished' | 'Timed Out';
     image: string;
 }
 

@@ -237,9 +237,18 @@ const Home = () => {
                   </Typography>
                 </Box>
                 <Chip
-                  label={quiz.status === 'Finished' ? `${quiz.score}%` : 'Unfinished'}
+                  label={quiz.status === 'Finished' ? `${quiz.score}%` : quiz.status === 'Timed Out' ? 'Timed Out' : 'Unfinished'}
                   size="small"
-                  sx={{ bgcolor: quiz.status === 'Finished' ? theme.palette.success.main : theme.palette.warning.main, color: 'white', alignSelf: { xs: 'flex-start', sm: 'center' } }}
+                  sx={{
+                    bgcolor:
+                      quiz.status === 'Finished'
+                        ? theme.palette.success.main
+                        : quiz.status === 'Timed Out'
+                          ? theme.palette.error.main
+                          : theme.palette.warning.main,
+                    color: 'white',
+                    alignSelf: { xs: 'flex-start', sm: 'center' },
+                  }}
                 />
               </Box>
             ))}

@@ -230,7 +230,16 @@ async function ensureQuestionInfrastructure() {
 async function ensureAttemptTimingInfrastructure() {
   await pool.query(
     `ALTER TABLE quizzes
-       ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0`
+       ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0,
+       ADD COLUMN IF NOT EXISTS is_timed BOOLEAN DEFAULT FALSE,
+       ADD COLUMN IF NOT EXISTS time_limit_seconds INTEGER CHECK (time_limit_seconds IS NULL OR time_limit_seconds > 0)`
+  );
+
+  await pool.query(
+    `ALTER TABLE quizzes
+       DROP CONSTRAINT IF EXISTS quizzes_status_check,
+       ADD CONSTRAINT quizzes_status_check
+       CHECK (status IN ('Finished', 'Unfinished', 'Timed Out'))`
   );
 
   await pool.query(
@@ -251,6 +260,14 @@ async function ensureAttemptTimingInfrastructure() {
   await pool.query(
     `CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_quiz ON user_question_attempts(user_id, quiz_id)`
   );
+}
+
+function normalizeQuizStatus(statusValue) {
+  if (statusValue === 'Finished' || statusValue === 'Timed Out') {
+    return statusValue;
+  }
+
+  return 'Unfinished';
 }
 
 async function ensureQuestionPoolForSubject(subjectId, subjectName) {
@@ -434,14 +451,21 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
       subcategory,
       status = 'Unfinished',
       score = 0,
+      isTimed = false,
+      timeLimitMinutes,
       date,
       image,
     } = req.body;
 
     const normalizedTitle = String(title || '').trim();
-    const normalizedStatus = status === 'Finished' ? 'Finished' : 'Unfinished';
+    const normalizedStatus = normalizeQuizStatus(status);
     const normalizedTotalQuestions = Number(totalQuestions);
     const normalizedScore = Number(score || 0);
+    const normalizedIsTimed = Boolean(isTimed);
+    const normalizedTimeLimitMinutes = Number(timeLimitMinutes);
+    const normalizedTimeLimitSeconds = normalizedIsTimed
+      ? Math.round((Number.isFinite(normalizedTimeLimitMinutes) ? normalizedTimeLimitMinutes : 30) * 60)
+      : null;
 
     if (!normalizedTitle) {
       return res.status(400).json({ success: false, message: 'Quiz title is required.' });
@@ -456,6 +480,7 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
     }
 
     await ensureQuestionInfrastructure();
+    await ensureAttemptTimingInfrastructure();
 
     const subjectId = await resolveSubjectId(subject);
     if (!subjectId) {
@@ -483,10 +508,22 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO quizzes (user_id, subject_id, title, score, total_questions, status, image_url, date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8::date, CURRENT_DATE))
+      `INSERT INTO quizzes (
+         user_id,
+         subject_id,
+         title,
+         score,
+         total_questions,
+         status,
+         image_url,
+         is_timed,
+         time_limit_seconds,
+         date
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10::date, CURRENT_DATE))
        RETURNING id, user_id AS "userId", subject_id AS "subjectId", title, score,
-                 total_questions AS "totalQuestions", status, image_url AS image, date`,
+                 total_questions AS "totalQuestions", status, image_url AS image,
+                 is_timed AS "isTimed", time_limit_seconds AS "timeLimitSeconds", date`,
       [
         targetUserId,
         subjectId,
@@ -495,6 +532,8 @@ router.post('/:targetId/quizzes', authenticateToken, async (req, res) => {
         selectedQuestionIds.length,
         normalizedStatus,
         image || null,
+        normalizedIsTimed,
+        normalizedTimeLimitSeconds,
         date || null,
       ]
     );
@@ -535,7 +574,9 @@ router.get('/:targetId/quizzes/:quizId/questions', authenticateToken, async (req
            SELECT 1
            FROM question_bookmarks qbkm
            WHERE qbkm.user_id = $2 AND qbkm.question_id = q.id
-         ) AS is_bookmarked
+         ) AS is_bookmarked,
+         qu.is_timed,
+         qu.time_limit_seconds
        FROM quiz_questions qq
        JOIN quizzes qu ON qu.id = qq.quiz_id
        JOIN questions q ON q.id = qq.question_id
@@ -589,7 +630,12 @@ router.get('/:targetId/quizzes/:quizId/questions', authenticateToken, async (req
       };
     });
 
-    return res.json({ success: true, questions });
+    const quizMeta = {
+      isTimed: Boolean(questionRows[0]?.is_timed),
+      timeLimitSeconds: questionRows[0]?.time_limit_seconds ? Number(questionRows[0].time_limit_seconds) : null,
+    };
+
+    return res.json({ success: true, quiz: quizMeta, questions });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: 'Failed to fetch quiz questions.' });
@@ -795,7 +841,7 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
     const values = [];
 
     if (status !== undefined) {
-      const normalizedStatus = status === 'Finished' ? 'Finished' : 'Unfinished';
+      const normalizedStatus = normalizeQuizStatus(status);
       values.push(normalizedStatus);
       updates.push(`status = $${values.length}`);
     }
@@ -839,6 +885,8 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
       return res.status(404).json({ success: false, message: 'Quiz not found.' });
     }
 
+    const shouldMarkUnansweredWrong = status === 'Timed Out';
+
     if (Array.isArray(attempts) && attempts.length > 0) {
       const quizQuestionsResult = await pool.query(
         `SELECT qq.question_id
@@ -857,21 +905,27 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
         }
 
         const selectedAnswer = String(attempt?.selectedAnswer || '').trim();
+        const hasSelectedAnswer = Boolean(selectedAnswer);
         const rawTimeSpent = Number(attempt?.timeSpentSeconds || 0);
         const timeSpentSeconds = Number.isFinite(rawTimeSpent) && rawTimeSpent > 0
           ? Math.round(rawTimeSpent)
           : 0;
 
-        const optionResult = await pool.query(
-          `SELECT id, is_correct
-           FROM question_options
-           WHERE question_id = $1 AND option_text = $2
-           LIMIT 1`,
-          [questionId, selectedAnswer]
-        );
+        let selectedOptionId = null;
+        let isCorrect = shouldMarkUnansweredWrong && !hasSelectedAnswer ? false : null;
 
-        const selectedOptionId = optionResult.rows[0]?.id || null;
-        const isCorrect = optionResult.rows[0]?.is_correct ?? null;
+        if (hasSelectedAnswer) {
+          const optionResult = await pool.query(
+            `SELECT id, is_correct
+             FROM question_options
+             WHERE question_id = $1 AND option_text = $2
+             LIMIT 1`,
+            [questionId, selectedAnswer]
+          );
+
+          selectedOptionId = optionResult.rows[0]?.id || null;
+          isCorrect = optionResult.rows[0]?.is_correct ?? null;
+        }
 
         await pool.query(
           `INSERT INTO user_question_attempts (
@@ -897,7 +951,7 @@ router.patch('/:targetId/quizzes/:quizId', authenticateToken, async (req, res) =
             quizId,
             questionId,
             selectedOptionId,
-            selectedAnswer || null,
+            hasSelectedAnswer ? selectedAnswer : null,
             isCorrect,
             timeSpentSeconds,
           ]
@@ -923,6 +977,8 @@ router.get('/:targetId/quizzes', authenticateToken, async (req, res) => {
          q.score,
          q.total_questions AS "totalQuestions",
          q.status,
+        q.is_timed AS "isTimed",
+        q.time_limit_seconds AS "timeLimitSeconds",
          q.date,
          COALESCE(q.image_url, s.image_url) AS image,
          s.name AS subject
