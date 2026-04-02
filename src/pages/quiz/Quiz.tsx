@@ -614,7 +614,9 @@ const Quiz = () => {
               ) : (
                 <Button
                   variant="contained"
-                  onClick={handleFinishQuiz}
+                  onClick={() => {
+                    void handleFinishQuiz();
+                  }}
                   disabled={answeredQuestions < questions.length || isSavingResult || isInteractionLocked}
                   sx={{ 
                     px: 4, 
